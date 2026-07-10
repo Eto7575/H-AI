@@ -7,7 +7,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
-    /* Kutunun telefonda düzgün ve ortal görünmesi için ufak bir stil */
     body {
       display: flex;
       justify-content: center;
@@ -23,7 +22,7 @@
   <div id="recaptcha-container"></div>
 
   <script>
-    // Firebase Bilgilerin (Buralar kendi bilgilerinle doldur)
+    // Firebase Bilgilerin
     var firebaseConfig = {
       apiKey: "AIzaSyA0JKTJSmlTZJ3RYwpwWenw4GmpTOaSzx4",
       authDomain: "h-messenger-1779c.firebaseapp.com",
@@ -35,12 +34,16 @@
     
     firebase.initializeApp(firebaseConfig); 
 
-    // TE DEEN KISIM: 'normal' mod yaparak kutuyu görünür hale getiriyoruz!
+    // YENÄ° EKLEDÄ°ÄžÄ°MÄ°Z YER TAM OLARAK BURASI:
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-      'size': 'normal' 
+      'size': 'normal',
+      'callback': function(response) {
+        // KullanÄ±cÄ± robot kontrolÃ¼nÃ¼ geÃ§tiÄŸi an App Inventor'a gizli mesaj gidiyor!
+        window.AppInventor.setWebViewString("RobotDegil");
+      }
     });
 
-    // lk açlta reCAPTCHA kutusunu ekrana çizdiriyoruz
+    // Ä°lk aÃ§Ä±lÄ±ÅŸta reCAPTCHA kutusunu ekrana Ã§izdiriyoruz
     window.recaptchaVerifier.render();
 
     var confirmationResultGlobal = null;
@@ -53,7 +56,6 @@
           window.AppInventor.setWebViewString("KodGonderildi");
         }).catch(function (error) {
           window.AppInventor.setWebViewString("Hata: " + error.message);
-          // Hata durumunda reCAPTCHA'y sfrla ki kullanc tekrar tklayabilsin
           window.recaptchaVerifier.render();
         });
     }
@@ -70,4 +72,3 @@
   </script>
 </body>
 </html>
-
