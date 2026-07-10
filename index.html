@@ -1,1 +1,61 @@
-<!DOCTYPE html> <html> <head> <title>Phone Authentication</title> <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script> <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> <script> // Your firebaseConfig object goes here var firebaseConfig = { // ... paste your Firebase configuration ... }; firebase.initializeApp(firebaseConfig); // ... (Add your phone authentication JavaScript code here) ... </script> </head> <body> <!-- Add your phone authentication HTML elements here --> </body> </html>
+<!DOCTYPE html>
+<html> 
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phone Authentication</title> 
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body>
+
+  <div id="recaptcha-container"></div>
+
+  <script>
+    // 1. BURAYA KEND? F?RREBASE B?LG?LER?N? YAZMAZSAN ?ALI?MAZ
+    var firebaseConfig = {
+      apiKey: "BURAYA_AP?_KEY?N?Z?_YAZIN",
+      authDomain: "h-messenger-1779c.firebaseapp.com",
+      projectId: "h-messenger-1779c",
+      storageBucket: "h-messenger-1779c.appspot.com",
+      messagingSenderId: "BURAYA_SENDER_ID_YAZIN",
+      appId: "BURAYA_APP_ID_YAZIN"
+    };
+    
+    firebase.initializeApp(firebaseConfig); 
+
+    // G?r¨¹nmez reCAPTCHA tan?ml?yoruz
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      'size': 'invisible'
+    });
+
+    var confirmationResultGlobal = null;
+
+    // App Inventor'dan (WebViewer) gelen numaray? yakalay?p SMS g?nderme fonksiyonu
+    function sendSMS(phoneNumber) {
+      var appVerifier = window.recaptchaVerifier;
+      firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+        .then(function (confirmationResult) {
+          confirmationResultGlobal = confirmationResult;
+          // App Inventor'a "KodG?nderildi" mesaj? u?uruyoruz
+          window.AppInventor.setWebViewString("KodGonderildi");
+        }).catch(function (error) {
+          window.AppInventor.setWebViewString("Hata: " + error.message);
+        });
+    }
+
+    // App Inventor'dan gelen 6 haneli kodu do?rulama fonksiyonu
+    function verifyCode(otpCode) {
+      if(confirmationResultGlobal) {
+        confirmationResultGlobal.confirm(otpCode).then(function (result) {
+          // Do?rulama ba?ar?l?! App Inventor'a bildiriyoruz
+          window.AppInventor.setWebViewString("GirisBasarili");
+        }).catch(function (error) {
+          window.AppInventor.setWebViewString("Hata: " + error.message);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
+
