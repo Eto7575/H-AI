@@ -368,7 +368,7 @@
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
-            canliHataGoster("Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.");
+            canliHataGoster("Doğrulama hatası! Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulamak başarısız oldu. Lütfen en baştan tekrar deneyin.");
             listeOlusturVeKaristir(); // Listeyi sıfırla ve karıştır
           }, 350);
           return;
@@ -395,7 +395,7 @@
         // Her şey kusursuzca bittiğinde App Inventor tarafını tetikliyoruz
         window.AppInventor.setWebViewString("RobotDegil");
       } else {
-        canliHataGoster("Doğrulama başarısız oldu. Eksik veya hatalı kutucuklar var, baştan deneyin.");
+        canliHataGoster("Doğrulama başarısız oldu. Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulamak başarılı olamadı. Baştan deneyin.");
         listeOlusturVeKaristir();
       }
     }
