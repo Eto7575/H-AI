@@ -9,17 +9,17 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
-    /* Google challenge penceresinin WebView içinde kaymasını önlemek için body sadeleştirildi */
+    /* Google challenge pencerelerinin kaymasını önlemek için body sade tutuldu */
     body {
       margin: 0;
       background-color: #f5f5f5;
       font-family: 'Roboto', Arial, sans-serif;
-      padding: 15px 10px;
+      padding: 10px;
       box-sizing: border-box;
       -webkit-overflow-scrolling: touch;
     }
     
-    /* Tüm içeriği güvenle ortalayan yeni ana sarmalayıcı */
+    /* Tüm içeriği güvenle ortalayan ana sarmalayıcı */
     .main-container {
       display: flex;
       flex-direction: column;
@@ -27,6 +27,28 @@
       width: 100%;
       max-width: 360px;
       margin: 0 auto;
+    }
+
+    /* Üst Kamera Deliğini Gizleyen / Havalı Gösteren Logo Alanı */
+    .camera-logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding-top: 28px; /* Kamera deliği (punch hole) / notch için cihaz güvenli alanı */
+      margin-bottom: 15px;
+    }
+    .camera-logo {
+      width: 85px; /* Havalı durması için ideal genişlik */
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.15));
+      animation: logoGiris 0.5s ease-out;
+    }
+
+    @keyframes logoGiris {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     .uyari-metni {
@@ -44,7 +66,7 @@
       display: flex;
       justify-content: center;
       width: 100%;
-      margin-top: 10px;
+      margin-top: 5px;
     }
 
     /* Orijinal reCAPTCHA Pencere Tasarımı */
@@ -160,7 +182,7 @@
       flex-shrink: 0;
     }
     .onay-satiri input[type="checkbox"] {
-      display: none; /* Standart checkbox'ı gizle */
+      display: none;
     }
     .kutu-gorsel {
       width: 100%;
@@ -177,7 +199,6 @@
       transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* GÜÇLENDİRİLMİŞ YEŞİL TİK ANİMASYONU */
     .onay-satiri.tikli .kutu-gorsel {
       background-color: #2e7d32;
       border-color: #2e7d32;
@@ -188,7 +209,6 @@
       content: "✓";
     }
 
-    /* GÜÇLENDİRİLMİŞ ŞİDDETLİ KIRMIZI X ANİMASYONU */
     .onay-satiri.patladi .kutu-gorsel {
       background-color: #c62828;
       border-color: #c62828;
@@ -254,7 +274,6 @@
       background-color: #1557b0;
     }
 
-    /* Mobil cihazlarda doğrulama resim pencerelerinin taşmasını önleyen ek kurallar */
     @media screen and (max-width: 480px) {
       iframe[title*="recaptcha"], iframe[src*="bframe"] {
         max-width: 100% !important;
@@ -264,8 +283,12 @@
 </head>
 <body>
 
-  <!-- Yeni güvenli sarmalayıcı konteyner -->
   <div class="main-container">
+
+    <!-- Havalı Logo Alanı (Cihazlardaki kamera deliği hizalaması için optimize edildi) -->
+    <div class="camera-logo-container">
+      <img src="4667-removebg-preview.png" class="camera-logo" alt="H-Messenger Logo" onerror="this.style.display='none'">
+    </div>
 
     <!-- İlk Başta Çıkan Gerçek Metin ve ReCAPTCHA Kutusu -->
     <div class="uyari-metni" id="baslik-metni">
@@ -376,7 +399,7 @@
     const eylemDurumlar = ["ayılamayan", "kendine gelemeyen", "çalışmaya başlayamayan", "konuşamayan", "gülmeden duramayan", "odaklanamayan"];
     const duygular = ["kalp kırıklığına", "derin duygulara", "gülme krizlerine", "empati yeteneğine", "ani hüzünlere"];
     const zarflar = ["kazara", "isteyerek", "asla unutmadan", "bazen heyecanla", "istemsizce", "gizlice", "bilerek"];
-    const eylemGecmisler = ["tatil yaptığımı", "internetsiz bir day geçirdiğimi", "erken uyuduğumu", "buralardan uzaklaştığımı", "ödevimi zamanında teslim ettiğimi", "telefonu bıraktığımı"];
+    const eylemGecmisler = ["tatil yaptığımı", "internetsiz bir day geçirdiğimi", "erken uyudumu", "buralardan uzaklaştığımı", "ödevimi zamanında teslim ettiğimi", "telefonu bıraktığımı"];
 
     const botAdlari = ["Selenium Bot", "Puppeteer Scripti", "DDoS Saldırı Modülü", "Scraper Spider", "AutoClicker Pro", "Tık Çiftliği Emülatörü", "GPT-5 Ajanı", "Python Request Tool", "SQL Injection Scripti", "cURL Otomasyonu", "Web Crawler Ajanı"];
     const versiyonlar = ["v1.0.4", "v4.2.1", "v9.9-beta", "v3.1.2", "v0.0.1-alpha", "v11.5.0-patch"];
@@ -431,6 +454,15 @@
       ];
 
       return sablonlar[Math.floor(Math.random() * sablonlar.length)];
+    }
+
+    function diziKaristir(dizi) {
+      let klon = [...dizi];
+      for (let i = klon.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [klon[i], klon[j]] = [klon[j], klon[i]];
+      }
+      return klon;
     }
 
     function listeOlusturVeKaristir() {
