@@ -19,7 +19,7 @@
       font-family: 'Roboto', Arial, sans-serif;
       padding: 15px 10px;
       box-sizing: border-box;
-      -webkit-overflow-scrolling: touch; /* iOS ve Android web göstericilerinde akıcı kaydırma */
+      -webkit-overflow-scrolling: touch; /* Mobil cihazlarda akıcı kaydırma */
     }
     .uyari-metni {
       max-width: 310px;
@@ -40,7 +40,7 @@
       box-shadow: 0px 11px 15px -7px rgba(0,0,0,0.2), 0px 24px 38px 3px rgba(0,0,0,0.14);
       padding: 7px;
       box-sizing: border-box;
-      margin-bottom: 30px; /* En alttaki boşluk */
+      margin-bottom: 30px;
     }
     .rc-mavi-baslik {
       background-color: #1a73e8;
@@ -54,7 +54,7 @@
       font-weight: 500;
     }
     
-    /* İletişim Kutusu (Popup) Yerine Canlı Kırmızı Hata Paneli */
+    /* Gelişmiş Canlı Hata Paneli */
     #canli-hata-paneli {
       display: none;
       background-color: #fde8e8;
@@ -217,10 +217,10 @@
       <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
     </div>
     
-    <!-- Canlı Kırmızı Hata Alanı -->
+    <!-- Çirkin Popup Pencereler Yerine Hata Mesajının Yazılacağı Alan -->
     <div id="canli-hata-paneli"></div>
     
-    <!-- Dinamik Karıştırılan Liste Alanı -->
+    <!-- JavaScript ile Karıştırılıp Doldurulacak Liste Altyapısı -->
     <div class="rc-liste-icerik" id="dinamik-liste"></div>
 
     <div class="rc-alt-bar">
@@ -247,7 +247,7 @@
     
     firebase.initializeApp(firebaseConfig);
 
-    // Uygulama yönlendirmeden geri döndüğünde Google Giriş durumunu yakala
+    // Uygulama yönlendirmeden (redirect) geri döndüğünde Google Giriş durumunu yakala
     firebase.auth().getRedirectResult()
       .then(function(result) {
         if (result.user) {
@@ -260,6 +260,7 @@
           }
         }
       }).catch(function(error) {
+        console.log("Redirect Hatası:", error.message);
         window.AppInventor.setWebViewString("Hata: " + error.message);
       });
 
@@ -294,8 +295,8 @@
       console.error("Render hatası:", e);
     }
 
-    // 10 Adet Normal ve 7 Adet Yasaklı Veri Havuzu
-    const maddelerHavuzu = [
+    // Doğru ve Yanlış Maddelerin Tam Listesi
+    const normalHavuzu = [
       { tip: 'normal', metin: 'Ben bir robot değilim.' },
       { tip: 'normal', metin: 'Ben bir yapay zeka sistemi değilim.' },
       { tip: 'normal', metin: 'Ben bir kaba kuvvet yazılımı değilim.' },
@@ -305,23 +306,58 @@
       { tip: 'normal', metin: 'Ben bir çamaşır makinesi değilim.' },
       { tip: 'normal', metin: 'Ben akıllı bir buzdolabı değilim.' },
       { tip: 'normal', metin: 'Ben potansiyel olarak bir robot değilim.' },
-      { tip: 'normal', metin: 'Kesinlikle gerçek bir insanım ve tüm üstteki maddeleri beyan ederim.' },
-      
-      { tip: 'yasakli', metin: 'Ben kötü amaçlı bir yazılımım', mesaj: 'Kötü amaçlı yazılımların sisteme giriş yapması yasaktır!' },
-      { tip: 'yasakli', metin: 'Ben potansiyel olarak bir robotum', mesaj: 'Potansiyel olarak robotsanız giriş yapamazsınız.' },
-      { tip: 'yasakli', metin: '01000010 01100101 01101110 00100000 01100010 01101001 01110010 00100000 01100001 01101100 01100111 01101111 01110010 01101001 01110100 01101101 01100001 01111001 11000100 10110001 01101101', mesaj: 'Sistem algoritmaları engellendi! Yeniden deneyin.' },
-      { tip: 'yasakli', metin: 'Ben sisteme sızmaya çalışan bir bot programıyım', mesaj: 'Otomasyon sistemleri tespit edildi. Giriş engellendi!' },
-      { tip: 'yasakli', metin: 'Ben kaba kuvvet (brute-force) saldırı komutuyum', mesaj: 'Kaba kuvvet saldırı tespiti! Oturum sıfırlandı.' },
-      { tip: 'yasakli', metin: 'Ben illegal bir cihaz çiftliği (device farm) emülatörüyüm', mesaj: 'Cihaz çiftliği (Device Farm) emülatörü algılandı!' },
-      { tip: 'yasakli', metin: 'Ben verileri çalmaya çalışan bir web scraper botuyum', mesaj: 'Web kazıyıcı (Scraper) bot engellendi!' }
+      { tip: 'normal', metin: 'Ben bir su arıtma cihazı değilim.' },
+      { tip: 'normal', metin: 'Ben bir insan evladıyım.' },
+      { tip: 'normal', metin: 'Sabahtan beri ekran başında oturan o çaresiz canlıyım.' },
+      { tip: 'normal', metin: 'Yapay zekadan daha az zekiyim ama duygularım var.' },
+      { tip: 'normal', metin: 'Sabahları kahve içmeden ayılamayan o kişiyim.' },
+      { tip: 'normal', metin: 'Kesinlikle gerçek bir insanım ve tüm üstteki maddeleri beyan ederim.' }
     ];
 
+    const yasakliHavuzu = [
+      { tip: 'yasakli', metin: 'Ben kötü amaçlı bir yazılımım', mesaj: 'Kötü amaçlı yazılımların sisteme giriş yapması yasaktır!' },
+      { tip: 'yasakli', metin: 'Ben potansiyel olarak bir robotum', mesaj: 'Potansiyel olarak robotsanız giriş yapamazsınız.' },
+      { tip: 'yasakli', metin: '01000010 01100101 01101110 00100000 01100010 01101001 01110010 00100000 01100001 01101100 01100111 01101111 01110010 01101001 01110100 01101101 01100001 01111001 11000100 10110001 01101101', mesaj: 'İkili kodla (Binary) konuşan botlar engellendi!' },
+      { tip: 'yasakli', metin: 'Ben sisteme sızmaya çalışan bir bot programıyım', mesaj: 'Otomasyon sistemleri tespit edildi. bot saldırı araçları giriş yapamazlar.' },
+      { tip: 'yasakli', metin: 'Ben kaba kuvvet (brute-force) saldırı komutuyum', mesaj: 'Kaba kuvvet saldırı tespiti! Oturum sıfırlandı.' },
+      { tip: 'yasakli', metin: 'Ben illegal bir cihaz çiftliği (device farm) emülatörüyüm', mesaj: 'Cihaz çiftliği (Device Farm) emülatörü algılandı!' },
+      { tip: 'yasakli', metin: 'Ben verileri çalmaya çalışan bir web scraper botuyum', mesaj: 'Web kazıyıcı (Scraper) bot engellendi!' },
+      { tip: 'yasakli', metin: 'Python Selenium kütüphanesiyim ve burayı taramaya geldim', mesaj: 'Selenium ile gelen botlar kapı dışarı!' },
+      { tip: 'yasakli', metin: 'Aslında arka planda 500 telefonla çalışan bir tık çiftliğiyim', mesaj: 'Tık çiftlikleri güvenlik duvarımız tarafından engellenmiştir!' },
+      { tip: 'yasakli', metin: 'Sadece kodlardan oluşan bir sızma test aracıyım', mesaj: 'Sızma testi araçlarına geçit yok!' },
+      { tip: 'yasakli', metin: 'Postman kullanarak istek atan bir otomatik script\'im', mesaj: 'Yapay zeka kokusu alıyorum! Script istekleri engellendi.' },
+      { tip: 'yasakli', metin: 'Sunucuyu çökertmek için saniyede 10.000 istek atan DDoS saldırısıyım', mesaj: 'DDoS saldırı girişimi başarıyla bastırıldı!' },
+      { tip: 'yasakli', metin: 'Tarayıcıda otomatik tıklama yapan o gıcık autoclicker eklentisiyim', mesaj: 'Autoclicker tespit edildi!' },
+      { tip: 'yasakli', metin: 'Google botlarını taklit eden sahte bir arama motoru örümceğiyim', mesaj: 'Ajan botlar içeri giremez!' },
+      { tip: 'yasakli', metin: 'Ben aslında insan kılığına girmiş bir GPT-5 dil modeliyim', mesaj: 'Büyük dil modelleri bu kapıdan geçemez!' }
+    ];
+
+    // Yardımcı Seçim Fonksiyonu: Belirtilen sayı kadar rastgele eleman seçer
+    function rastgeleSec(dizi, adet) {
+      let kopyalanan = [...dizi];
+      let sonuc = [];
+      for (let i = 0; i < adet && kopyalanan.length > 0; i++) {
+        const index = Math.floor(Math.random() * kopyalanan.length);
+        sonuc.push(kopyalanan.splice(index, 1)[0]);
+      }
+      return sonuc;
+    }
+
+    // Listeyi Her Seferinde Tamamen Değişken Sayıda Oluşturan Fonksiyon
     function listeOlusturVeKaristir() {
       let listeKutusu = document.getElementById("dinamik-liste");
       if(!listeKutusu) return;
       listeKutusu.innerHTML = "";
       
-      let karisikListe = [...maddelerHavuzu];
+      // Dinamik sayılar: 8-13 adet Doğru, 5-10 adet Yasaklı madde seçilsin
+      const dogruAdet = Math.floor(Math.random() * 6) + 8; // 8, 9, 10, 11, 12, 13
+      const yasakliAdet = Math.floor(Math.random() * 6) + 5; // 5, 6, 7, 8, 9, 10
+      
+      let secilenDogrular = rastgeleSec(normalHavuzu, dogruAdet);
+      let secilenYasaklilar = rastgeleSec(yasakliHavuzu, yasakliAdet);
+      
+      // İkisini birleştirip karıştırıyoruz
+      let karisikListe = [...secilenDogrular, ...secilenYasaklilar];
       for (let i = karisikListe.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [karisikListe[i], karisikListe[j]] = [karisikListe[j], karisikListe[i]];
@@ -350,6 +386,7 @@
       window.scrollTo(0, 0);
     }
 
+    // Canlı Kırmızı Hata Gösterme Paneli Fonksiyonu
     function canliHataGoster(mesaj) {
       let panel = document.getElementById("canli-hata-paneli");
       if(!panel) return;
@@ -360,39 +397,44 @@
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      setTimeout(() => { panel.style.display = "none"; }, 4000);
+      setTimeout(() => { panel.style.display = "none"; }, 4500);
     }
 
+    // %5 Şans ve Animasyon Yönetim Algoritması
     function kutuTikla(element, tip, mesaj) {
       var cb = element.querySelector('input[type="checkbox"]');
       if (element.classList.contains('tikli') || element.classList.contains('patladi')) return;
 
+      // KURAL 1: Yasaklılara tıklandığında anında %100 Patlama (Kırmızı ❌ ve Sarsılma)
       if (tip === 'yasakli') {
         element.classList.add('patladi');
         cb.checked = true;
         setTimeout(function() {
           canliHataGoster(mesaj);
-          listeOlusturVeKaristir();
+          listeOlusturVeKaristir(); // Listeyi baştan karıştır, adet ve sırasını değiştir
         }, 350);
         return;
       }
 
+      // KURAL 2: Doğru olanlara tıklandığında %5 ihtimalle Haksız Patlama (Kırmızı ❌)
       if (tip === 'normal') {
-        if (Math.random() < 0.15) {
+        if (Math.random() < 0.05) {
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
-            canliHataGoster("Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.");
-            listeOlusturVeKaristir();
+            canliHataGoster("Yapay zeka kokusu alıyorum! Sisteme sızma girişimi engellendi. Baştan başlayın.");
+            listeOlusturVeKaristir(); // Listeyi baştan karıştır, adet ve sırasını değiştir
           }, 350);
           return;
         }
       }
 
+      // Geriye kalan %95 olasılıktaki başarılı durum: Yeşil Tik Animasyonu
       element.classList.add('tikli');
       cb.checked = true;
     }
 
+    // Nihai Doğrulama Kontrolü (Verify butonuna basıldığında)
     function listeyiKontrolEt() {
       var kutular = document.querySelectorAll('.gogogicik');
       var yasakliKutular = document.querySelectorAll('.yasakli');
@@ -406,17 +448,31 @@
         document.getElementById("gicik-recaptcha-pencere").style.display = "none";
         window.AppInventor.setWebViewString("RobotDegil");
       } else {
-        canliHataGoster("Doğrulama başarısız oldu. Eksik veya hatalı kutucuklar var, baştan deneyin.");
+        canliHataGoster("Doğrulama başarısız! bot saldırı araçları giriş yapamazlar. Tüm doğru kutucukları işaretleyin.");
         listeOlusturVeKaristir();
       }
     }
 
-    // Google Giriş Fonksiyonu (Redirect Moduna Güncellendi)
+    // Geliştirilmiş Melez (Hybrid) Google Giriş Fonksiyonu
     function startGoogleSignIn() {
       var provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('profile');
-      // Popup engeline takılmamak için yönlendirme (redirect) kullanıyoruz
-      firebase.auth().signInWithRedirect(provider);
+      
+      // Önce Popup yöntemini dene (Destekleyen WebView'lar için en ideali)
+      firebase.auth().signInWithPopup(provider)
+        .then(function(result) {
+          var user = result.user;
+          var phoneNumber = user.phoneNumber;
+          if (phoneNumber) {
+            window.AppInventor.setWebViewString("Telefon:" + phoneNumber);
+          } else {
+            window.AppInventor.setWebViewString("NumaraYok:" + user.displayName);
+          }
+        }).catch(function(error) {
+          console.log("Popup engellendi, Redirect yöntemi deneniyor...", error.message);
+          // Popup engellenirse anında Redirect (Yönlendirme) yöntemine geçiş yapıyoruz:
+          firebase.auth().signInWithRedirect(provider);
+        });
     }
   </script>
 </body>
