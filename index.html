@@ -1,75 +1,162 @@
 <!DOCTYPE html>
-<html> 
+<html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phone Authentication</title> 
+  <title>Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın. </title>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
     body {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
       background-color: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .uyari-metni {
+      max-width: 350px;
+      text-align: center;
+      font-size: 14px;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    /* Upuzun Onaylama Listesi Tasarımı */
+    #onay-listesi {
+      display: none; /* İlk başta gizli, reCAPTCHA'dan sonra açılacak */
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 350px;
+      width: 100%;
+    }
+    .onay-satiri {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .onay-satiri input {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    #onay-butonu {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    #onay-butonu:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
 
+  <div class="uyari-metni" id="baslik-metni">
+    Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.
+  </div>
+
   <div id="recaptcha-container"></div>
 
+  <div id="onay-listesi">
+    <h3 style="text-align:center; margin-top:0; font-size:16px; color:#d9534f;">EK GÜVENLİK PROTOKOLÜ</h3>
+    <p style="font-size:13px; text-align:center; color:#666; margin-bottom:20px;">Lütfen aşağıdaki siber beyanların tümünü manuel olarak onaylayın:</p>
+    
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir robot değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir yapay zeka sistemi değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir kaba kuvvet (brute-force) yazılımı değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir cihaz çiftliği (device farm) değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir otomatik tıklama botu değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben kötü amaçlı bir hacker değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir çamaşır makinesi değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben akıllı bir buzdolabı değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben kodlarla oluşturulmuş bir simülasyon değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir spam gönderici (spammer) değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir web kazıyıcı (web scraper) değilim.</span></div>
+    <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Kesinlikle ve tamamen gerçek bir insanım.</span></div>
+
+    <button id="onay-butonu" onclick="listeyiKontrolEt()">Doğrulamayı Tamamla</button>
+  </div>
+
   <script>
-    // Firebase Bilgilerin
+    // Gerçek Firebase Bilgilerin
     var firebaseConfig = {
       apiKey: "AIzaSyC_UbnaLpQv8Lnq65QQL9ARRZEPRZqW2d8",
       authDomain: "h-messenger-1779c.firebaseapp.com",
       projectId: "h-messenger-1779c",
-      storageBucket: "h-messenger-1779c.appspot.com",
+      storageBucket: "h-messenger-1779c.firebasestorage.app",
       messagingSenderId: "769297013571",
-      appId: "1:769297013571:android:651278164866de537b2df6"
+      appId: "1:769297013571:web:3106ad119ae72e377b2df6",
+      measurementId: "G-YKTLBVH5CW"
     };
     
-    firebase.initializeApp(firebaseConfig); 
+    firebase.initializeApp(firebaseConfig);
 
-    // YENİ EKLEDİĞİMİZ YER TAM OLARAK BURASI:
+    // 1. Aşama: Google reCAPTCHA v2 Başlatma
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
       'size': 'normal',
       'callback': function(response) {
-        // Kullanıcı robot kontrolünü geçtiği an App Inventor'a gizli mesaj gidiyor!
-        window.AppInventor.setWebViewString("RobotDegil");
+        // reCAPTCHA resimleri geçildi! İlk uyarıyı ve kutuyu gizle, gıcık onay listesini aç
+        document.getElementById("recaptcha-container").style.display = "none";
+        document.getElementById("baslik-metni").style.display = "none";
+        document.getElementById("onay-listesi").style.display = "block";
       }
     });
-
-    // İlk açılışta reCAPTCHA kutusunu ekrana çizdiriyoruz
     window.recaptchaVerifier.render();
 
-    var confirmationResultGlobal = null;
+    // 2. Aşama: Gıcık Listeyi Kontrol Etme
+    function listeyiKontrolEt() {
+      var kutular = document.querySelectorAll('.gogogicik');
+      var hepsiSecili = true;
+      
+      kutular.forEach(function(kutu) {
+        if (!kutu.checked) {
+          hepsiSecili = false;
+        }
+      });
 
-    function sendSMS(phoneNumber) {
-      var appVerifier = window.recaptchaVerifier;
-      firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
-        .then(function (confirmationResult) {
-          confirmationResultGlobal = confirmationResult;
-          window.AppInventor.setWebViewString("KodGonderildi");
-        }).catch(function (error) {
-          window.AppInventor.setWebViewString("Hata: " + error.message);
-          window.recaptchaVerifier.render();
-        });
+      if (hepsiSecili) {
+        // Kullanıcı tüm kutuları işaretlediyse App Inventor'a pasla!
+        window.AppInventor.setWebViewString("RobotDegil");
+      } else {
+        alert("Giriş reddedildi! Maddelerin TÜMÜNÜ tek tek işaretlemek zorundasınız.");
+      }
     }
 
-    function verifyCode(otpCode) {
-      if(confirmationResultGlobal) {
-        confirmationResultGlobal.confirm(otpCode).then(function (result) {
-          window.AppInventor.setWebViewString("GirisBasarili");
-        }).catch(function (error) {
+    // Google Giriş Fonksiyonu
+    function startGoogleSignIn() {
+      var provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('profile');
+      
+      firebase.auth().signInWithPopup(provider)
+        .then(function(result) {
+          var user = result.user;
+          var phoneNumber = user.phoneNumber;
+          
+          if (phoneNumber) {
+            window.AppInventor.setWebViewString("Telefon:" + phoneNumber);
+          } else {
+            window.AppInventor.setWebViewString("NumaraYok:" + user.displayName);
+          }
+        }).catch(function(error) {
           window.AppInventor.setWebViewString("Hata: " + error.message);
         });
-      }
     }
   </script>
 </body>
 </html>
-
