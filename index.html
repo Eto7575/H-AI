@@ -51,10 +51,27 @@
       font-weight: 500;
     }
     
+    /* İletişim Kutusu Yerine Canlı Kırmızı Hata Paneli */
+    #canli-hata-paneli {
+      display: none;
+      background-color: #fde8e8;
+      color: #c62828;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 8px;
+      text-align: center;
+      border-bottom: 1px solid #f8b4b4;
+      animation: belirmeEfekti 0.2s ease;
+    }
+    @keyframes belirmeEfekti {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
     /* Dikey ve Uzun Liste Alanı */
     .rc-liste-icerik {
       padding: 5px 0;
-      max-height: 380px;
+      max-height: 350px;
       overflow-y: auto;
       border: 1px solid #dfdfdf;
       margin: 4px 0;
@@ -65,12 +82,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 8px;
+      padding: 12px 8px;
       border-bottom: 1px solid #f0f0f0;
       background-color: #ffffff;
       cursor: pointer;
       user-select: none;
       position: relative;
+      transition: background 0.2s;
     }
     .onay-satiri:hover {
       background-color: #fafafa;
@@ -83,13 +101,13 @@
     /* Animasyonlu Özel Kutucuk Alanı */
     .ozel-kutu-alani {
       position: relative;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       margin-right: 12px;
       flex-shrink: 0;
     }
     .onay-satiri input[type="checkbox"] {
-      display: none; /* Standart çirkin kutuyu gizle */
+      display: none;
     }
     .kutu-gorsel {
       width: 100%;
@@ -102,36 +120,36 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 14px;
-      transition: all 0.2s ease;
+      font-size: 15px;
+      transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* YEŞİL TİK ANİMASYONU EFFECT */
+    /* GÜÇLENDİRİLMİŞ YEŞİL TİK ANİMASYONU */
     .onay-satiri.tikli .kutu-gorsel {
       background-color: #2e7d32;
       border-color: #2e7d32;
       color: white;
-      transform: scale(1.1);
+      transform: scale(1.15);
     }
     .onay-satiri.tikli .kutu-gorsel::after {
       content: "✓";
     }
 
-    /* KIRMIZI X ANİMASYONU EFFECT */
+    /* GÜÇLENDİRİLMİŞ ŞİDDETLİ KIRMIZI X ANİMASYONU */
     .onay-satiri.patladi .kutu-gorsel {
       background-color: #c62828;
       border-color: #c62828;
       color: white;
-      transform: scale(1.2);
-      animation: sarsil 0.2s ease alternate 2;
+      transform: scale(1.4);
+      animation: sarsilSiddetli 0.1s ease alternate 4;
     }
     .onay-satiri.patladi .kutu-gorsel::after {
       content: "✕";
     }
 
-    @keyframes sarsil {
-      0% { transform: translateX(-3px) scale(1.2); }
-      100% { transform: translateX(3px) scale(1.2); }
+    @keyframes sarsilSiddetli {
+      0% { transform: translateX(-6px) scale(1.4); }
+      100% { transform: translateX(6px) scale(1.4); }
     }
 
     .onay-metin-alani {
@@ -196,82 +214,9 @@
       <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
     </div>
     
-    <div class="rc-liste-icerik">
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben bir robot değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben bir yapay zeka sistemi değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben bir kaba kuvvet yazılımı değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben bir cihaz çiftliği değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben bir otomatik tıklama botu değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben kötü amaçlı bir hacker değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben bir çamaşır makinesi değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben akıllı bir buzdolabı değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben potansiyel olarak bir robot değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Ben bir su arıtma cihazı değilim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-
-      <div class="onay-satiri" onclick="kutuTikla(this, 'yasakli', 'Kötü amaçlı yazılımların sisteme giriş yapması yasaktır!')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="yasakli"></div><span class="onay-metin-alani">Ben kötü amaçlı bir yazılımım</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'yasakli', 'Potansiyel olarak robotsanız giriş yapamazsınız.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="yasakli"></div><span class="onay-metin-alani">Ben potansiyel olarak bir robotum</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'yasakli', 'Sistem algoritmaları engellendi! Yeniden deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="yasakli"></div><span class="onay-metin-alani">01000010 01100101 01101110 00100000 01100010 01101001 01110010 00100000 01100001 01101100 01100111 01101111 01110010 01101001 01110100 01101101 01100001 01111001 11000100 10110001 01101101</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'yasakli', 'Otomasyon sistemleri tespit edildi. Giriş engellendi!')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="yasakli"></div><span class="onay-metin-alani">Ben sisteme sızmaya çalışan bir bot programıyım</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'yasakli', 'Kaba kuvvet saldırı tespiti! Oturum sıfırlandı.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="yasakli"></div><span class="onay-metin-alani">Ben kaba kuvvet (brute-force) saldırı komutuyum</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'yasakli', 'Cihaz çiftliği (Device Farm) emülatörü algılandı!')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="yasakli"></div><span class="onay-metin-alani">Ben illegal bir cihaz çiftliği (device farm) emülatörüyüm</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-      <div class="onay-satiri" onclick="kutuTikla(this, 'yasakli', 'Web kazıyıcı (Scraper) bot engellendi!')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="yasakli"></div><span class="onay-metin-alani">Ben verileri çalmaya çalışan bir web scraper botuyum</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-
-      <div class="onay-satiri" onclick="kutuTikla(this, 'normal', 'Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.')">
-        <div class="sol-kisin"><div class="ozel-kutu-alani"><div class="kutu-gorsel"></div><input type="checkbox" class="gogogicik"></div><span class="onay-metin-alani">Kesinlikle gerçek bir insanım ve tüm üstteki maddeleri beyan ederim.</span></div>
-        <div class="sag-logo-alani"></div>
-      </div>
-    </div>
+    <div id="canli-hata-paneli"></div>
+    
+    <div class="rc-liste-icerik" id="dinamik-liste"></div>
 
     <div class="rc-alt-bar">
       <div class="rc-ikonlar">
@@ -284,7 +229,6 @@
   </div>
 
   <script>
-    // Gerçek Firebase Bilgilerin
     var firebaseConfig = {
       apiKey: "AIzaSyC_UbnaLpQv8Lnq65QQL9ARRZEPRZqW2d8",
       authDomain: "h-messenger-1779c.firebaseapp.com",
@@ -297,82 +241,128 @@
     
     firebase.initializeApp(firebaseConfig);
 
-    // 1. Aşama: Gerçek reCAPTCHA v2 Başlatma
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
       'size': 'normal',
       'callback': function(response) {
         document.getElementById("recaptcha-container").style.display = "none";
         document.getElementById("baslik-metni").style.display = "none";
         document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+        listeOlusturVeKaristir();
       }
     });
     window.recaptchaVerifier.render();
 
-    // Yeni Şans Oranlı Tıklama Yönetimi
+    const maddelerHavuzu = [
+      { tip: 'normal', metin: 'Ben bir robot değilim.' },
+      { tip: 'normal', metin: 'Ben bir yapay zeka sistemi değilim.' },
+      { tip: 'normal', metin: 'Ben bir kaba kuvvet yazılımı değilim.' },
+      { tip: 'normal', metin: 'Ben bir cihaz çiftliği değilim.' },
+      { tip: 'normal', metin: 'Ben bir otomatik tıklama botu değilim.' },
+      { tip: 'normal', metin: 'Ben kötü amaçlı bir hacker değilim.' },
+      { tip: 'normal', metin: 'Ben bir çamaşır makinesi değilim.' },
+      { tip: 'normal', metin: 'Ben akıllı bir buzdolabı değilim.' },
+      { tip: 'normal', metin: 'Ben potansiyel olarak bir robot değilim.' },
+      { tip: 'normal', metin: 'Ben bir su arıtma cihazı değilim.' },
+      { tip: 'normal', metin: 'Kesinlikle gerçek bir insanım ve tüm üstteki maddeleri beyan ederim.' },
+      
+      { tip: 'yasakli', metin: 'Ben kötü amaçlı bir yazılımım', mesaj: 'Kötü amaçlı yazılımların sisteme giriş yapması yasaktır!' },
+      { tip: 'yasakli', metin: 'Ben potansiyel olarak bir robotum', mesaj: 'Potansiyel olarak robotsanız giriş yapamazsınız.' },
+      { tip: 'yasakli', metin: '01000010 01100101 01101110 00100000 01100010 01101001 01110010 00100000 01100001 01101100 01100111 01101111 01110010 01101001 01110100 01101101 01100001 01111001 11000100 10110001 01101101', mesaj: 'Sistem algoritmaları engellendi! Yeniden deneyin.' },
+      { tip: 'yasakli', metin: 'Ben sisteme sızmaya çalışan bir bot programıyım', mesaj: 'Otomasyon sistemleri tespit edildi. Giriş engellendi!' },
+      { tip: 'yasakli', metin: 'Ben kaba kuvvet (brute-force) saldırı komutuyum', mesaj: 'Kaba kuvvet saldırı tespiti! Oturum sıfırlandı.' },
+      { tip: 'yasakli', metin: 'Ben illegal bir cihaz çiftliği (device farm) emülatörüyüm', mesaj: 'Cihaz çiftliği (Device Farm) emülatörü algılandı!' },
+      { tip: 'yasakli', metin: 'Ben verileri çalmaya çalışan bir web scraper botuyum', mesaj: 'Web kazıyıcı (Scraper) bot engellendi!' }
+    ];
+
+    function listeOlusturVeKaristir() {
+      let listeKutusu = document.getElementById("dinamik-liste");
+      listeKutusu.innerHTML = "";
+      
+      let karisikListe = [...maddelerHavuzu];
+      for (let i = karisikListe.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [karisikListe[i], karisikListe[j]] = [karisikListe[j], karisikListe[i]];
+      }
+
+      karisikListe.forEach(item => {
+        let satir = document.createElement("div");
+        satir.className = "onay-satiri";
+        satir.setAttribute("data-tip", item.tip);
+        
+        satir.innerHTML = `
+          <div class="sol-kisin">
+            <div class="ozel-kutu-alani">
+              <div class="kutu-gorsel"></div>
+              <input type="checkbox" class="${item.tip === 'normal' ? 'gogogicik' : 'yasakli'}">
+            </div>
+            <span class="onay-metin-alani">${item.metin}</span>
+          </div>
+          <div class="sag-logo-alani"></div>
+        `;
+        
+        satir.onclick = function() { kutuTikla(satir, item.tip, item.mesaj || 'Doğrulama hatası! Potansiyel tehdit saptandı. Baştan deneyin.'); };
+        listeKutusu.appendChild(satir);
+      });
+    }
+
+    // Canlı Hata Gösterme Paneli Fonksiyonu (Alert yerine bu çalışıyor)
+    function canliHataGoster(mesaj) {
+      let panel = document.getElementById("canli-hata-paneli");
+      panel.innerText = "⚠️ " + mesaj;
+      panel.style.display = "block";
+      
+      // Mobil cihazı hafifçe sarsıp uyarmak için titreşim tetikleyicisi
+      if(navigator.vibrate) navigator.vibrate(200);
+
+      // 4 saniye sonra hatayı otomatik gizle
+      setTimeout(() => { panel.style.display = "none"; }, 4000);
+    }
+
     function kutuTikla(element, tip, mesaj) {
       var cb = element.querySelector('input[type="checkbox"]');
-      
       if (element.classList.contains('tikli') || element.classList.contains('patladi')) return;
 
-      // Kural 1: Yasaklılara gelirse %100 ihtimalle patlasın
       if (tip === 'yasakli') {
         element.classList.add('patladi');
         cb.checked = true;
         setTimeout(function() {
-          alert(mesaj);
-          sifirlaTümSistemi();
-        }, 300);
+          canliHataGoster(mesaj); // Çirkin pop-up yerine gömülü panel çalışıyor
+          listeOlusturVeKaristir();
+        }, 350);
         return;
       }
 
-      // Kural 2: Normal (işaretlemesi gereken) maddelere gelirse %30 ihtimalle patlasın (❌)
       if (tip === 'normal') {
-        if (Math.random() < 0.3) {
+        if (Math.random() < 0.15) {
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
-            alert(mesaj);
-            sifirlaTümSistemi();
-          }, 300);
+            canliHataGoster(mesaj); // Çirkin pop-up yerine gömülü panel çalışıyor
+            listeOlusturVeKaristir();
+          }, 350);
           return;
         }
       }
 
-      // %70'lik temiz şans alanında yeşil tik yakma animasyonu
       element.classList.add('tikli');
       cb.checked = true;
     }
 
-    // Sıfırlama Fonksiyonu
-    function sifirlaTümSistemi() {
-      document.querySelectorAll('.onay-satiri').forEach(function(el) {
-        el.classList.remove('tikli', 'patladi');
-      });
-      document.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
-        cb.checked = false;
-      });
-    }
-
-    // 2. Aşama: Buton Kontrolü
     function listeyiKontrolEt() {
       var kutular = document.querySelectorAll('.gogogicik');
       var yasakliKutular = document.querySelectorAll('.yasakli');
       var hepsiSecili = true;
       var yasakliSeciliMi = false;
       
-      kutular.forEach(function(kutu) {
-        if (!kutu.checked) { hepsiSecili = false; }
-      });
-
-      yasakliKutular.forEach(function(kutu) {
-        if (kutu.checked) { yasakliSeciliMi = true; }
-      });
+      kutular.forEach(function(kutu) { if (!kutu.checked) { hepsiSecili = false; } });
+      yasakliKutular.forEach(function(kutu) { if (kutu.checked) { yasakliSeciliMi = true; } });
 
       if (hepsiSecili && !yasakliSeciliMi) {
         document.getElementById("gicik-recaptcha-pencere").style.display = "none";
         window.AppInventor.setWebViewString("RobotDegil");
       } else {
-        alert("Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulamak başarısız oldu. Tüm kutucukları işaretleyin ve tekrar deneyin.");
+        canliHataGoster("Doğrulama başarısız oldu. Eksik kutucukları işaretleyin ve tekrar deneyin.");
+        listeOlusturVeKaristir();
       }
     }
 
@@ -384,16 +374,7 @@
         .then(function(result) {
           var user = result.user;
           var phoneNumber = user.phoneNumber;
-          
           if (phoneNumber) {
             window.AppInventor.setWebViewString("Telefon:" + phoneNumber);
           } else {
-            window.AppInventor.setWebViewString("NumaraYok:" + user.displayName);
-          }
-        }).catch(function(error) {
-          window.AppInventor.setWebViewString("Hata: " + error.message);
-        });
-    }
-  </script>
-</body>
-</html>
+            window.AppInventor.setWebView
