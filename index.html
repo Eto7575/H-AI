@@ -12,14 +12,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start; /* Mobilde yukarıdan başlayıp doğal kayması için */
+      justify-content: flex-start; /* Mobilde doğal kayma için yukarıdan başlatıyoruz */
       min-height: 100vh;
       margin: 0;
       background-color: #f5f5f5;
       font-family: 'Roboto', Arial, sans-serif;
       padding: 15px 10px;
       box-sizing: border-box;
-      -webkit-overflow-scrolling: touch; /* Mobil cihazlarda akıcı kaydırma */
+      -webkit-overflow-scrolling: touch; /* Mobil WebView için akıcı kaydırma */
     }
     .uyari-metni {
       max-width: 310px;
@@ -71,7 +71,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Dikey ve Uzun Liste Alanı */
+    /* Dikey Liste Alanı (Kilitlenme olmaması için yükseklik limiti kaldırıldı) */
     .rc-liste-icerik {
       padding: 5px 0;
       border: 1px solid #dfdfdf;
@@ -295,8 +295,8 @@
       console.error("Render hatası:", e);
     }
 
-    // Doğru ve Yanlış Maddelerin Tam Listesi
-    const normalHavuzu = [
+    // NORMAL MADDELER (15 adet potansiyel seçenek)
+    const normalHavuz = [
       { tip: 'normal', metin: 'Ben bir robot değilim.' },
       { tip: 'normal', metin: 'Ben bir yapay zeka sistemi değilim.' },
       { tip: 'normal', metin: 'Ben bir kaba kuvvet yazılımı değilim.' },
@@ -314,7 +314,8 @@
       { tip: 'normal', metin: 'Kesinlikle gerçek bir insanım ve tüm üstteki maddeleri beyan ederim.' }
     ];
 
-    const yasakliHavuzu = [
+    // YASAKLI MADDELER (15 adet potansiyel seçenek)
+    const yasakliHavuz = [
       { tip: 'yasakli', metin: 'Ben kötü amaçlı bir yazılımım', mesaj: 'Kötü amaçlı yazılımların sisteme giriş yapması yasaktır!' },
       { tip: 'yasakli', metin: 'Ben potansiyel olarak bir robotum', mesaj: 'Potansiyel olarak robotsanız giriş yapamazsınız.' },
       { tip: 'yasakli', metin: '01000010 01100101 01101110 00100000 01100010 01101001 01110010 00100000 01100001 01101100 01100111 01101111 01110010 01101001 01110100 01101101 01100001 01111001 11000100 10110001 01101101', mesaj: 'İkili kodla (Binary) konuşan botlar engellendi!' },
@@ -323,7 +324,7 @@
       { tip: 'yasakli', metin: 'Ben illegal bir cihaz çiftliği (device farm) emülatörüyüm', mesaj: 'Cihaz çiftliği (Device Farm) emülatörü algılandı!' },
       { tip: 'yasakli', metin: 'Ben verileri çalmaya çalışan bir web scraper botuyum', mesaj: 'Web kazıyıcı (Scraper) bot engellendi!' },
       { tip: 'yasakli', metin: 'Python Selenium kütüphanesiyim ve burayı taramaya geldim', mesaj: 'Selenium ile gelen botlar kapı dışarı!' },
-      { tip: 'yasakli', metin: 'Aslında arka planda 500 telefonla çalışan bir tık çiftliğiyim', mesaj: 'Tık çiftlikleri güvenlik duvarımız tarafından engellenmiştir!' },
+      { tip: 'yasakli', metin: 'Aslında arka planda 500 telefonla çalışan bir tık çiftliğiyim', mesaj: 'Tık çiftlikleri güvenlik duvarımız tarafından engellendi!' },
       { tip: 'yasakli', metin: 'Sadece kodlardan oluşan bir sızma test aracıyım', mesaj: 'Sızma testi araçlarına geçit yok!' },
       { tip: 'yasakli', metin: 'Postman kullanarak istek atan bir otomatik script\'im', mesaj: 'Yapay zeka kokusu alıyorum! Script istekleri engellendi.' },
       { tip: 'yasakli', metin: 'Sunucuyu çökertmek için saniyede 10.000 istek atan DDoS saldırısıyım', mesaj: 'DDoS saldırı girişimi başarıyla bastırıldı!' },
@@ -332,37 +333,36 @@
       { tip: 'yasakli', metin: 'Ben aslında insan kılığına girmiş bir GPT-5 dil modeliyim', mesaj: 'Büyük dil modelleri bu kapıdan geçemez!' }
     ];
 
-    // Yardımcı Seçim Fonksiyonu: Belirtilen sayı kadar rastgele eleman seçer
-    function rastgeleSec(dizi, adet) {
-      let kopyalanan = [...dizi];
-      let sonuc = [];
-      for (let i = 0; i < adet && kopyalanan.length > 0; i++) {
-        const index = Math.floor(Math.random() * kopyalanan.length);
-        sonuc.push(kopyalanan.splice(index, 1)[0]);
+    // Bir diziyi rastgele karıştırma yardımcı fonksiyonu
+    function diziKaristir(dizi) {
+      let klon = [...dizi];
+      for (let i = klon.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [klon[i], klon[j]] = [klon[j], klon[i]];
       }
-      return sonuc;
+      return klon;
     }
 
-    // Listeyi Her Seferinde Tamamen Değişken Sayıda Oluşturan Fonksiyon
+    // Her Seferinde Farklı Boyutta ve Karışık Yeni Liste Oluşturma
     function listeOlusturVeKaristir() {
       let listeKutusu = document.getElementById("dinamik-liste");
       if(!listeKutusu) return;
       listeKutusu.innerHTML = "";
-      
-      // Dinamik sayılar: 8-13 adet Doğru, 5-10 adet Yasaklı madde seçilsin
-      const dogruAdet = Math.floor(Math.random() * 6) + 8; // 8, 9, 10, 11, 12, 13
-      const yasakliAdet = Math.floor(Math.random() * 6) + 5; // 5, 6, 7, 8, 9, 10
-      
-      let secilenDogrular = rastgeleSec(normalHavuzu, dogruAdet);
-      let secilenYasaklilar = rastgeleSec(yasakliHavuzu, yasakliAdet);
-      
-      // İkisini birleştirip karıştırıyoruz
-      let karisikListe = [...secilenDogrular, ...secilenYasaklilar];
-      for (let i = karisikListe.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [karisikListe[i], karisikListe[j]] = [karisikListe[j], karisikListe[i]];
-      }
 
+      // 1. ADIM: Dinamik kutucuk sayıları belirle
+      // Normal maddelerden rastgele 8 ila 12 adet seç
+      const normalAdet = Math.floor(Math.random() * 5) + 8; 
+      // Yasaklı maddelerden rastgele 6 ila 10 adet seç
+      const yasakliAdet = Math.floor(Math.random() * 5) + 6; 
+
+      // 2. ADIM: Havuzları karıştırıp belirlenen adet kadar madde seç
+      const secilenNormaller = diziKaristir(normalHavuz).slice(0, normalAdet);
+      const secilenYasaklilar = diziKaristir(yasakliHavuz).slice(0, yasakliAdet);
+
+      // 3. ADIM: İki alt grubu birleştirip son kez harmanla
+      let karisikListe = diziKaristir(secilenNormaller.concat(secilenYasaklilar));
+
+      // 4. ADIM: DOM elemanlarını oluşturup sayfaya ekle
       karisikListe.forEach(item => {
         let satir = document.createElement("div");
         satir.className = "onay-satiri";
@@ -383,6 +383,7 @@
         listeKutusu.appendChild(satir);
       });
       
+      // Kullanıcının kafası karışmasın diye sayfa kaydırmasını sıfırla
       window.scrollTo(0, 0);
     }
 
@@ -411,19 +412,19 @@
         cb.checked = true;
         setTimeout(function() {
           canliHataGoster(mesaj);
-          listeOlusturVeKaristir(); // Listeyi baştan karıştır, adet ve sırasını değiştir
+          listeOlusturVeKaristir(); // Listeyi baştan karıştır, adet sayısını ve maddeleri güncelle
         }, 350);
         return;
       }
 
-      // KURAL 2: Doğru olanlara tıklandığında %5 ihtimalle Haksız Patlama (Kırmızı ❌)
+      // KURAL 2: Doğru olanlara tıklandığında sadece %5 ihtimalle Haksız Patlama (Kırmızı ❌)
       if (tip === 'normal') {
         if (Math.random() < 0.05) {
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
             canliHataGoster("Yapay zeka kokusu alıyorum! Sisteme sızma girişimi engellendi. Baştan başlayın.");
-            listeOlusturVeKaristir(); // Listeyi baştan karıştır, adet ve sırasını değiştir
+            listeOlusturVeKaristir(); // Listeyi sıfırla, boyutunu ve içeriğini yeniden oluştur
           }, 350);
           return;
         }
@@ -436,6 +437,7 @@
 
     // Nihai Doğrulama Kontrolü (Verify butonuna basıldığında)
     function listeyiKontrolEt() {
+      // Sadece o an sayfada aktif olarak oluşturulmuş kutucukları yakalarız
       var kutular = document.querySelectorAll('.gogogicik');
       var yasakliKutular = document.querySelectorAll('.yasakli');
       var hepsiSecili = true;
