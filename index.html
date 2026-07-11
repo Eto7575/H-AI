@@ -13,7 +13,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start; /* Mobilde doğal dikey kayma için yukarıdan başlatıyoruz */
+      justify-content: flex-start;
       min-height: 100vh;
       margin: 0;
       background-color: #f5f5f5;
@@ -60,7 +60,7 @@
       display: none;
       background-color: #fde8e8;
       color: #c62828;
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
       padding: 10px;
       text-align: center;
@@ -73,7 +73,7 @@
       display: none;
       background-color: #e8f0fe;
       color: #1a73e8;
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
       padding: 12px;
       text-align: center;
@@ -86,14 +86,14 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Dikey Liste Alanı (Doğal kaydırma için max-height kaldırıldı) */
+    /* Dikey Liste Alanı - WebView kilitlenmesini engellemek için dikey sınırlar kaldırıldı */
     .rc-liste-icerik {
       padding: 5px 0;
       border: 1px solid #dfdfdf;
       margin: 4px 0;
     }
     
-    /* Her Onay Satırının Tasarımı */
+    /* Her Bir Onay Satırının Tasarımı */
     .onay-satiri {
       display: flex;
       align-items: center;
@@ -265,22 +265,29 @@
     
     firebase.initializeApp(firebaseConfig);
 
-    // Yönlendirmeden gelen Google verisini yakala
+    // WebView yönlendirmesinden gelen Google verilerini her sayfa açılışında yakala
     firebase.auth().getRedirectResult()
       .then(function(result) {
         if (result.user) {
           var user = result.user;
           var phoneNumber = user.phoneNumber;
           if (phoneNumber) {
-            window.AppInventor.setWebViewString("Telefon:" + phoneNumber);
+            yollaAppInventor("Telefon:" + phoneNumber);
           } else {
-            window.AppInventor.setWebViewString("NumaraYok:" + user.displayName);
+            yollaAppInventor("NumaraYok:" + user.displayName);
           }
         }
       }).catch(function(error) {
         console.log("Redirect Hatası:", error.message);
-        window.AppInventor.setWebViewString("Hata: " + error.message);
+        yollaAppInventor("Hata: " + error.message);
       });
+
+    // App Inventor WebViewString Güvenli İletişim Fonksiyonu
+    function yollaAppInventor(deger) {
+      if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
+        window.AppInventor.setWebViewString(deger);
+      }
+    }
 
     // 1. AŞAMA: Gerçek reCAPTCHA v2 Doğrulayıcı Tanımlaması
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
@@ -311,7 +318,7 @@
       console.error("Render hatası:", e);
     }
 
-    // 1000'DEN FAZLA BENZERSİZ DOĞRULAMA SORUSU ÜRETEN AKILLI MOTOR
+    // 1000'DEN FAZLA BENZERSİZ DOĞRULAMA SORUSU ÜRETEN AKILLI JENERATÖR MOTORU
     function binSoruUret() {
       const normalList = [];
       const yasakliList = [];
@@ -371,9 +378,9 @@
       yasakliList.push(...statikYasaklilar);
 
       // Kelime Havuzları (Dil Bilgisi Harmanlayıcısı)
-      const sifatlar = ["uykulu", "yorgun", "şaşkın", "nostaljik", "sinirli", "acıkan", "üşüyen", "mutlu", "telaşlı", "heyecanlı", "meraklı", "sakar", "kararsız", "enerjik", "üşengeç", "duygusal", "romantik", "gururlu", "sabırsız", "tedirgin", "keyifli"];
-      const isimler = ["insan evladı", "fani", "çay tiryakisi", "öğrenci", "klavye emekçisi", "dünya vatandaşı", "kahve bağımlısı", "kedisever", "köpek dostu", "makarna canavarı", "pijama tutkunu", "gece kuşu", "erken kalkan insan", "balkon sevdalısı"];
-      const eylemler = ["kod yazarken uyuya kalan", "otobüsü kaçırmamak için koşan", "pizza siparişini sabırsızlıkla bekleyen", "internette kedi videoları izleyen", "şifresini her gün unutan", "metrobüste tutunmadan durmaya çalışan", "yolda yürürken kaldırım taşlarına basmamaya özen gösteren", "gözü ısıran birini görünce yolunu değiştiren", "kulaklığı dolandığı için sinir krizi geçiren", "kargo kapıyı çaldığı an koşan"];
+      const sifatlar = ["uykulu", "yorgun", "şaşkın", "nostaljik", "sinirli", "acıkan", "üşüyen", "mutlu", "telaşlı", "heyecanlı", "meraklı", "sakar", "kararsız", "enerjik", "üşengeç", "duygusal", "romantik", "gururlu", "sabırsız", "tedirgin", "keyifli", "dalgın", "telaşlı", "sabırsız", "uykucu"];
+      const isimler = ["insan evladı", "fani", "çay tiryakisi", "öğrenci", "klavye emekçisi", "dünya vatandaşı", "kahve bağımlısı", "kedisever", "köpek dostu", "makarna canavarı", "pijama tutkunu", "gece kuşu", "erken kalkan insan", "balkon sevdalısı", "baba", "dayı", "yazılımcı"];
+      const eylemler = ["kod yazarken uyuya kalan", "otobüsü kaçırmamak için koşan", "pizza siparişini sabırsızlıkla bekleyen", "internette kedi videoları izleyen", "şifresini her gün unutan", "metrobüste tutunmadan durmaya çalışan", "yolda yürürken kaldırım taşlarına basmamaya özen gösteren", "gözü ısıran birini görünce yolunu değiştiren", "kulaklığı dolandığı için sinir krizi geçiren", "kargo kapıyı çaldığı an koşan", "banyoda şarkı söyleyen", "son dilim baklavayı kimseye bırakmayan"];
       const icecekler = ["sıcak çay", "sert bir kahve", "taze portakal suyu", "ılık süt", "soğuk limonata", "tuzlu ayran", "soğuk su", "demli çay", "şekersiz filtre kahve"];
       const eylem_durumlar = ["ayılamayan", "kendine gelemeyen", "çalışmaya başlayamayan", "konuşamayan", "gülmeden duramayan", "odaklanamayan"];
       const duygular = ["kalp kırıklığına", "derin duygulara", "gülme krizlerine", "empati yeteneğine", "ani hüzünlere", "anlamsız heyecanlara"];
@@ -574,7 +581,7 @@
 
       if (hepsiSecili && !yasakliSeciliMi) {
         document.getElementById("gicik-recaptcha-pencere").style.display = "none";
-        window.AppInventor.setWebViewString("RobotDegil");
+        yollaAppInventor("RobotDegil");
       } else {
         canliHataGoster("Doğrulama başarısız! bot saldırı araçları giriş yapamazlar. Tüm doğru kutucukları işaretleyin.");
         listeOlusturVeKaristir();
@@ -583,6 +590,10 @@
 
     // Google Giriş Fonksiyonu (Yönlendirme Melez Sistemi)
     function startGoogleSignIn() {
+      // WebView pop-up ve redirect engellerini aşmak için hem web akışını başlatıyor
+      // hem de App Inventor tarafına tetikleyici mesaj yolluyoruz!
+      yollaAppInventor("TriggerGoogleSignIn");
+
       var provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('profile');
       
@@ -591,9 +602,9 @@
           var user = result.user;
           var phoneNumber = user.phoneNumber;
           if (phoneNumber) {
-            window.AppInventor.setWebViewString("Telefon:" + phoneNumber);
+            yollaAppInventor("Telefon:" + phoneNumber);
           } else {
-            window.AppInventor.setWebViewString("NumaraYok:" + user.displayName);
+            yollaAppInventor("NumaraYok:" + user.displayName);
           }
         }).catch(function(error) {
           console.log("Popup engellendi, Redirect yöntemi deneniyor...", error.message);
@@ -603,4 +614,3 @@
   </script>
 </body>
 </html>
-
