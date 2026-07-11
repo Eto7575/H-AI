@@ -1,18 +1,16 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
+  <!-- Firebase Kütüphaneleri -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
+    /* Google challenge penceresinin WebView içinde kaymasını önlemek için body sadeleştirildi */
     body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
       margin: 0;
       background-color: #f5f5f5;
       font-family: 'Roboto', Arial, sans-serif;
@@ -20,8 +18,19 @@
       box-sizing: border-box;
       -webkit-overflow-scrolling: touch;
     }
+    
+    /* Tüm içeriği güvenle ortalayan yeni ana sarmalayıcı */
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
     .uyari-metni {
-      max-width: 310px;
+      width: 100%;
       text-align: center;
       font-size: 13px;
       color: #333;
@@ -30,6 +39,15 @@
       line-height: 1.4;
     }
 
+    /* Google reCAPTCHA kutusunu ortalayan sarmalayıcı */
+    .recaptcha-wrapper {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    /* Orijinal reCAPTCHA Pencere Tasarımı */
     #gicik-recaptcha-pencere {
       display: none;
       width: 310px;
@@ -52,6 +70,7 @@
       font-weight: 500;
     }
     
+    /* Gelişmiş Canlı Hata Paneli */
     #canli-hata-paneli {
       display: none;
       background-color: #fde8e8;
@@ -64,6 +83,7 @@
       animation: belirmeEfekti 0.2s ease;
     }
     
+    /* H-captcha Dinamik İlerleme Barı Paneli */
     #ai-loader {
       display: none;
       background-color: #e8f0fe;
@@ -103,12 +123,14 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
+    /* Dikey Liste Alanı */
     .rc-liste-icerik {
       padding: 5px 0;
       border: 1px solid #dfdfdf;
       margin: 4px 0;
     }
     
+    /* Her Onay Satırının Tasarımı */
     .onay-satiri {
       display: flex;
       align-items: center;
@@ -129,6 +151,7 @@
       align-items: center;
     }
 
+    /* Animasyonlu Özel Kutucuk Alanı */
     .ozel-kutu-alani {
       position: relative;
       width: 22px;
@@ -137,7 +160,7 @@
       flex-shrink: 0;
     }
     .onay-satiri input[type="checkbox"] {
-      display: none;
+      display: none; /* Standart checkbox'ı gizle */
     }
     .kutu-gorsel {
       width: 100%;
@@ -154,6 +177,7 @@
       transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
+    /* GÜÇLENDİRİLMİŞ YEŞİL TİK ANİMASYONU */
     .onay-satiri.tikli .kutu-gorsel {
       background-color: #2e7d32;
       border-color: #2e7d32;
@@ -164,6 +188,7 @@
       content: "✓";
     }
 
+    /* GÜÇLENDİRİLMİŞ ŞİDDETLİ KIRMIZI X ANİMASYONU */
     .onay-satiri.patladi .kutu-gorsel {
       background-color: #c62828;
       border-color: #c62828;
@@ -228,39 +253,57 @@
     #verify-butonu:hover {
       background-color: #1557b0;
     }
+
+    /* Mobil cihazlarda doğrulama resim pencerelerinin taşmasını önleyen ek kurallar */
+    @media screen and (max-width: 480px) {
+      iframe[title*="recaptcha"], iframe[src*="bframe"] {
+        max-width: 100% !important;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="uyari-metni" id="baslik-metni">
-    Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.
-  </div>
-  <div id="recaptcha-container"></div>
+  <!-- Yeni güvenli sarmalayıcı konteyner -->
+  <div class="main-container">
 
-  <div id="gicik-recaptcha-pencere">
-    <div class="rc-mavi-baslik">
-      <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
+    <!-- İlk Başta Çıkan Gerçek Metin ve ReCAPTCHA Kutusu -->
+    <div class="uyari-metni" id="baslik-metni">
+      Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.
     </div>
     
-    <div id="ai-loader">
-      <div>🧩 H-captcha soruları oluşturuluyor...</div>
-      <div class="progress-bar-container">
-        <div class="progress-bar-fill"></div>
+    <div class="recaptcha-wrapper">
+      <div id="recaptcha-container"></div>
+    </div>
+
+    <!-- Gerçek reCAPTCHA Geçilince Açılan Dikey Liste Paneli -->
+    <div id="gicik-recaptcha-pencere">
+      <div class="rc-mavi-baslik">
+        <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
+      </div>
+      
+      <!-- Hareketli / Canlı İlerleyen H-captcha İlerleme Barı -->
+      <div id="ai-loader">
+        <div>🧩 H-captcha soruları oluşturuluyor...</div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill"></div>
+        </div>
+      </div>
+
+      <div id="canli-hata-paneli"></div>
+      
+      <div class="rc-liste-icerik" id="dinamik-liste"></div>
+
+      <div class="rc-alt-bar">
+        <div class="rc-ikonlar">
+          <span class="rc-ikon">🔄</span>
+          <span class="rc-ikon">🎧</span>
+          <span class="rc-ikon">ℹ️</span>
+        </div>
+        <button id="verify-butonu" onclick="listeyiKontrolEt()">Verify</button>
       </div>
     </div>
 
-    <div id="canli-hata-paneli"></div>
-    
-    <div class="rc-liste-icerik" id="dinamik-liste"></div>
-
-    <div class="rc-alt-bar">
-      <div class="rc-ikonlar">
-        <span class="rc-ikon">🔄</span>
-        <span class="rc-ikon">🎧</span>
-        <span class="rc-ikon">ℹ️</span>
-      </div>
-      <button id="verify-butonu" onclick="listeyiKontrolEt()">Verify</button>
-    </div>
   </div>
 
   <script>
@@ -333,7 +376,7 @@
     const eylemDurumlar = ["ayılamayan", "kendine gelemeyen", "çalışmaya başlayamayan", "konuşamayan", "gülmeden duramayan", "odaklanamayan"];
     const duygular = ["kalp kırıklığına", "derin duygulara", "gülme krizlerine", "empati yeteneğine", "ani hüzünlere"];
     const zarflar = ["kazara", "isteyerek", "asla unutmadan", "bazen heyecanla", "istemsizce", "gizlice", "bilerek"];
-    const eylemGecmisler = ["tatil yaptığımı", "internetsiz bir gün geçirdiğimi", "erken uyuduğumu", "buralardan uzaklaştığımı", "ödevimi zamanında teslim ettiğimi", "telefonu bıraktığımı"];
+    const eylemGecmisler = ["tatil yaptığımı", "internetsiz bir day geçirdiğimi", "erken uyuduğumu", "buralardan uzaklaştığımı", "ödevimi zamanında teslim ettiğimi", "telefonu bıraktığımı"];
 
     const botAdlari = ["Selenium Bot", "Puppeteer Scripti", "DDoS Saldırı Modülü", "Scraper Spider", "AutoClicker Pro", "Tık Çiftliği Emülatörü", "GPT-5 Ajanı", "Python Request Tool", "SQL Injection Scripti", "cURL Otomasyonu", "Web Crawler Ajanı"];
     const versiyonlar = ["v1.0.4", "v4.2.1", "v9.9-beta", "v3.1.2", "v0.0.1-alpha", "v11.5.0-patch"];
@@ -382,21 +425,12 @@
         { metin: `Mevcut sistemde ${rBot} ${rVer} versiyonu olarak çalışmaktayım.`, mesaj: `${rBot} botları kapı dışarı! bot saldırı araçları giriş yapamazlar.` },
         { metin: `Doğrudan arka planda ${rIstek} istek atan bir ${rBot} scriptiyim.`, mesaj: `DDoS saldırı girişimi engellendi! Yapay zeka kokusu alıyorum.` },
         { metin: `Sisteme sızıp ${rEylemBot} için kodlanmış bir siber aracım.`, mesaj: `Sızma aracı engellendi! bot saldırı araçları giriş yapamazlar.` },
-        { metin: `Sadece ${rBot} kütüphanesi kullanarak burayı taramaya geldim.`, mesaj: `Otomasyon sistemi tespit edildi! Script istekleri engellendi.` },
+        { metin: `Sadece ${rBot} kütüphane kullanarak burayı taramaya geldim.`, mesaj: `Otomasyon sistemi tespit edildi! Script istekleri engellendi.` },
         { metin: `Görünüşte insan kılığına girmiş bir ${rBot} dil modeliyim.`, mesaj: `Yapay zeka modelleri bu kapıdan geçemez!` },
         { metin: `Tamamen ${rZarf} tetiklenmiş bir ${rBot} otomasyonuyum.`, mesaj: `Otomasyon araçları bu sisteme giremez!` }
       ];
 
       return sablonlar[Math.floor(Math.random() * sablonlar.length)];
-    }
-
-    function diziKaristir(dizi) {
-      let klon = [...dizi];
-      for (let i = klon.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [klon[i], klon[j]] = [klon[j], klon[i]];
-      }
-      return klon;
     }
 
     function listeOlusturVeKaristir() {
@@ -554,4 +588,3 @@
   </script>
 </body>
 </html>
-
