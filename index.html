@@ -1,9 +1,11 @@
+html
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
+  <!-- Firebase Kütüphaneleri -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
@@ -51,14 +53,14 @@
       font-weight: 500;
     }
     
-    /* İletişim Kutusu Yerine Canlı Kırmızı Hata Paneli */
+    /* İletişim Kutusu (Popup) Yerine Canlı Kırmızı Hata Paneli */
     #canli-hata-paneli {
       display: none;
       background-color: #fde8e8;
       color: #c62828;
       font-size: 11px;
       font-weight: 600;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
       border-bottom: 1px solid #f8b4b4;
       animation: belirmeEfekti 0.2s ease;
@@ -107,7 +109,7 @@
       flex-shrink: 0;
     }
     .onay-satiri input[type="checkbox"] {
-      display: none;
+      display: none; /* Standart checkbox'ı gizle */
     }
     .kutu-gorsel {
       width: 100%;
@@ -204,18 +206,22 @@
 </head>
 <body>
 
+  <!-- İlk Başta Çıkan Gerçek Metin ve ReCAPTCHA Kutusu -->
   <div class="uyari-metni" id="baslik-metni">
     Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.
   </div>
   <div id="recaptcha-container"></div>
 
+  <!-- Gerçek reCAPTCHA Geçilince Açılan Dikey Liste Paneli -->
   <div id="gicik-recaptcha-pencere">
     <div class="rc-mavi-baslik">
       <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
     </div>
     
+    <!-- Çirkin Popup Pencereler Yerine Hata Mesajının Yazılacağı Alan -->
     <div id="canli-hata-paneli"></div>
     
+    <!-- JavaScript ile Karıştırılıp Doldurulacak Liste Altyapısı -->
     <div class="rc-liste-icerik" id="dinamik-liste"></div>
 
     <div class="rc-alt-bar">
@@ -229,6 +235,7 @@
   </div>
 
   <script>
+    // Gerçek Firebase Bilgilerin
     var firebaseConfig = {
       apiKey: "AIzaSyC_UbnaLpQv8Lnq65QQL9ARRZEPRZqW2d8",
       authDomain: "h-messenger-1779c.firebaseapp.com",
@@ -241,17 +248,37 @@
     
     firebase.initializeApp(firebaseConfig);
 
+    // 1. AŞAMA: Gerçek reCAPTCHA v2 Doğrulayıcı Tanımlaması
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
       'size': 'normal',
       'callback': function(response) {
+        // Gerçek reCAPTCHA başarıyla geçildiğinde bu blok çalışır
+        document.getElementById("recaptcha-container").style.display = "none";
+        document.getElementById("baslik-metni").style.display = "none";
+        document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+        listeOlusturVeKaristir();
+      },
+      'expired-callback': function() {
+        canliHataGoster("reCAPTCHA doğrulama süresi doldu. Lütfen sayfayı yenileyin.");
+      },
+      'error-callback': function(error) {
+        console.log("reCAPTCHA Hatası:", error);
+        // Güvenlik duvarı alan adını engellese bile oyunun devam etmesi için fallback:
         document.getElementById("recaptcha-container").style.display = "none";
         document.getElementById("baslik-metni").style.display = "none";
         document.getElementById("gicik-recaptcha-pencere").style.display = "block";
         listeOlusturVeKaristir();
       }
     });
-    window.recaptchaVerifier.render();
 
+    // İlk reCAPTCHA görselini ekrana basıyoruz
+    try {
+      window.recaptchaVerifier.render();
+    } catch(e) {
+      console.error("Render hatası:", e);
+    }
+
+    // 10 Adet Normal (İşaretlenmesi Gereken) ve 7 Adet Yasaklı (Boş Kalması Gereken) Veri Havuzu
     const maddelerHavuzu = [
       { tip: 'normal', metin: 'Ben bir robot değilim.' },
       { tip: 'normal', metin: 'Ben bir yapay zeka sistemi değilim.' },
@@ -262,7 +289,6 @@
       { tip: 'normal', metin: 'Ben bir çamaşır makinesi değilim.' },
       { tip: 'normal', metin: 'Ben akıllı bir buzdolabı değilim.' },
       { tip: 'normal', metin: 'Ben potansiyel olarak bir robot değilim.' },
-      { tip: 'normal', metin: 'Ben bir su arıtma cihazı değilim.' },
       { tip: 'normal', metin: 'Kesinlikle gerçek bir insanım ve tüm üstteki maddeleri beyan ederim.' },
       
       { tip: 'yasakli', metin: 'Ben kötü amaçlı bir yazılımım', mesaj: 'Kötü amaçlı yazılımların sisteme giriş yapması yasaktır!' },
@@ -274,8 +300,10 @@
       { tip: 'yasakli', metin: 'Ben verileri çalmaya çalışan bir web scraper botuyum', mesaj: 'Web kazıyıcı (Scraper) bot engellendi!' }
     ];
 
+    // Listenin Yerini Baştan Aşağı Karıştırıp Ekrana Diken Fisher-Yates Algoritması
     function listeOlusturVeKaristir() {
       let listeKutusu = document.getElementById("dinamik-liste");
+      if(!listeKutusu) return;
       listeKutusu.innerHTML = "";
       
       let karisikListe = [...maddelerHavuzu];
@@ -305,49 +333,55 @@
       });
     }
 
-    // Canlı Hata Gösterme Paneli Fonksiyonu (Alert yerine bu çalışıyor)
+    // Ekranın İçinde Kırmızı Canlı Uyarı Yazısı Gösteren Alan
     function canliHataGoster(mesaj) {
       let panel = document.getElementById("canli-hata-paneli");
+      if(!panel) return;
       panel.innerText = "⚠️ " + mesaj;
       panel.style.display = "block";
       
-      // Mobil cihazı hafifçe sarsıp uyarmak için titreşim tetikleyicisi
+      // Mobil cihazı uyaracak fiziksel hafif sarsıntı hissi (vibrate)
       if(navigator.vibrate) navigator.vibrate(200);
 
-      // 4 saniye sonra hatayı otomatik gizle
+      // Mesajı 4 saniye sonra otomatik olarak gözden kaybediyoruz
       setTimeout(() => { panel.style.display = "none"; }, 4000);
     }
 
+    // Şans ve Animasyon Yönetim Algoritması
     function kutuTikla(element, tip, mesaj) {
       var cb = element.querySelector('input[type="checkbox"]');
       if (element.classList.contains('tikli') || element.classList.contains('patladi')) return;
 
+      // KURAL 1: Yasaklılara tıklandığında anında %100 Patlama (Kırmızı ❌ ve Sarsılma)
       if (tip === 'yasakli') {
         element.classList.add('patladi');
         cb.checked = true;
         setTimeout(function() {
-          canliHataGoster(mesaj); // Çirkin pop-up yerine gömülü panel çalışıyor
-          listeOlusturVeKaristir();
+          canliHataGoster(mesaj);
+          listeOlusturVeKaristir(); // Listeyi baştan karıştır ve sıfırla
         }, 350);
         return;
       }
 
+      // KURAL 2: Doğru olanlara tıklandığında %15 ihtimalle Haksız Patlama (Kırmızı ❌)
       if (tip === 'normal') {
         if (Math.random() < 0.15) {
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
-            canliHataGoster(mesaj); // Çirkin pop-up yerine gömülü panel çalışıyor
-            listeOlusturVeKaristir();
+            canliHataGoster("Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.");
+            listeOlusturVeKaristir(); // Listeyi sıfırla ve karıştır
           }, 350);
           return;
         }
       }
 
+      // Geriye kalan %85 olasılıktaki başarılı durum: Yeşil Tik Animasyonu
       element.classList.add('tikli');
       cb.checked = true;
     }
 
+    // Nihai Doğrulama Kontrolü (Verify butonuna basıldığında)
     function listeyiKontrolEt() {
       var kutular = document.querySelectorAll('.gogogicik');
       var yasakliKutular = document.querySelectorAll('.yasakli');
@@ -359,13 +393,15 @@
 
       if (hepsiSecili && !yasakliSeciliMi) {
         document.getElementById("gicik-recaptcha-pencere").style.display = "none";
+        // Her şey kusursuzca bittiğinde App Inventor tarafını tetikliyoruz
         window.AppInventor.setWebViewString("RobotDegil");
       } else {
-        canliHataGoster("Doğrulama başarısız oldu. Eksik kutucukları işaretleyin ve tekrar deneyin.");
+        canliHataGoster("Doğrulama başarısız oldu. Eksik veya hatalı kutucuklar var, baştan deneyin.");
         listeOlusturVeKaristir();
       }
     }
 
+    // Google Giriş Fonksiyonu
     function startGoogleSignIn() {
       var provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('profile');
@@ -377,4 +413,14 @@
           if (phoneNumber) {
             window.AppInventor.setWebViewString("Telefon:" + phoneNumber);
           } else {
-            window.AppInventor.setWebView
+            window.AppInventor.setWebViewString("NumaraYok:" + user.displayName);
+          }
+        }).catch(function(error) {
+          window.AppInventor.setWebViewString("Hata: " + error.message);
+        });
+    }
+  </script>
+</body>
+</html>
+
+
