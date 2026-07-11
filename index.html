@@ -74,8 +74,6 @@
     /* Dikey ve Uzun Liste Alanı */
     .rc-liste-icerik {
       padding: 5px 0;
-      /* İçerideki kaydırma sınırını (max-height) tamamen kaldırdık. 
-         Böylece Web Gösterici sayfanın kendisini kaydıracak ve kilitlenme olmayacak. */
       border: 1px solid #dfdfdf;
       margin: 4px 0;
     }
@@ -219,10 +217,10 @@
       <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
     </div>
     
-    <!-- Çirkin Popup Pencereler Yerine Hata Mesajının Yazılacağı Alan -->
+    <!-- Canlı Kırmızı Hata Alanı -->
     <div id="canli-hata-paneli"></div>
     
-    <!-- JavaScript ile Karıştırılıp Doldurulacak Liste Altyapısı -->
+    <!-- Dinamik Karıştırılan Liste Alanı -->
     <div class="rc-liste-icerik" id="dinamik-liste"></div>
 
     <div class="rc-alt-bar">
@@ -249,6 +247,22 @@
     
     firebase.initializeApp(firebaseConfig);
 
+    // Uygulama yönlendirmeden geri döndüğünde Google Giriş durumunu yakala
+    firebase.auth().getRedirectResult()
+      .then(function(result) {
+        if (result.user) {
+          var user = result.user;
+          var phoneNumber = user.phoneNumber;
+          if (phoneNumber) {
+            window.AppInventor.setWebViewString("Telefon:" + phoneNumber);
+          } else {
+            window.AppInventor.setWebViewString("NumaraYok:" + user.displayName);
+          }
+        }
+      }).catch(function(error) {
+        window.AppInventor.setWebViewString("Hata: " + error.message);
+      });
+
     // 1. AŞAMA: Gerçek reCAPTCHA v2 Doğrulayıcı Tanımlaması
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
       'size': 'normal',
@@ -259,7 +273,10 @@
         listeOlusturVeKaristir();
       },
       'expired-callback': function() {
-        canliHataGoster("reCAPTCHA doğrulama süresi doldu. Lütfen sayfayı yenileyin.");
+        // reCAPTCHA süresi dolunca sessizce resetleyelim, hata göstermeyelim
+        if (typeof grecaptcha !== 'undefined') {
+          grecaptcha.reset();
+        }
       },
       'error-callback': function(error) {
         console.log("reCAPTCHA Hatası:", error);
@@ -277,7 +294,7 @@
       console.error("Render hatası:", e);
     }
 
-    // 10 Adet Normal (İşaretlenmesi Gereken) ve 7 Adet Yasaklı (Boş Kalması Gereken) Veri Havuzu
+    // 10 Adet Normal ve 7 Adet Yasaklı Veri Havuzu
     const maddelerHavuzu = [
       { tip: 'normal', metin: 'Ben bir robot değilim.' },
       { tip: 'normal', metin: 'Ben bir yapay zeka sistemi değilim.' },
@@ -299,7 +316,6 @@
       { tip: 'yasakli', metin: 'Ben verileri çalmaya çalışan bir web scraper botuyum', mesaj: 'Web kazıyıcı (Scraper) bot engellendi!' }
     ];
 
-    // Listenin Yerini Baştan Aşağı Karıştırıp Ekrana Diken Fisher-Yates Algoritması
     function listeOlusturVeKaristir() {
       let listeKutusu = document.getElementById("dinamik-liste");
       if(!listeKutusu) return;
@@ -331,62 +347,52 @@
         listeKutusu.appendChild(satir);
       });
       
-      // Liste oluştuktan sonra sayfanın en üstüne odaklanmasını sağlayalım
       window.scrollTo(0, 0);
     }
 
-    // Ekranın İçinde Kırmızı Canlı Uyarı Yazısı Gösteren Alan
     function canliHataGoster(mesaj) {
       let panel = document.getElementById("canli-hata-paneli");
       if(!panel) return;
       panel.innerText = "⚠️ " + mesaj;
       panel.style.display = "block";
       
-      // Mobil cihazı uyaracak fiziksel hafif sarsıntı hissi (vibrate)
       if(navigator.vibrate) navigator.vibrate(200);
 
-      // Sayfayı hata panelini görsün diye en üste kaydır
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // Mesajı 4 saniye sonra otomatik olarak gözden kaybediyoruz
       setTimeout(() => { panel.style.display = "none"; }, 4000);
     }
 
-    // Şans ve Animasyon Yönetim Algoritması
     function kutuTikla(element, tip, mesaj) {
       var cb = element.querySelector('input[type="checkbox"]');
       if (element.classList.contains('tikli') || element.classList.contains('patladi')) return;
 
-      // KURAL 1: Yasaklılara tıklandığında anında %100 Patlama (Kırmızı ❌ ve Sarsılma)
       if (tip === 'yasakli') {
         element.classList.add('patladi');
         cb.checked = true;
         setTimeout(function() {
           canliHataGoster(mesaj);
-          listeOlusturVeKaristir(); // Listeyi baştan karıştır ve sıfırla
+          listeOlusturVeKaristir();
         }, 350);
         return;
       }
 
-      // KURAL 2: Doğru olanlara tıklandığında %15 ihtimalle Haksız Patlama (Kırmızı ❌)
       if (tip === 'normal') {
         if (Math.random() < 0.15) {
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
             canliHataGoster("Doğrulama hatası! Potansiyel sistem tehdidi olarak algılandınız. Lütfen en baştan tekrar deneyin.");
-            listeOlusturVeKaristir(); // Listeyi sıfırla ve karıştır
+            listeOlusturVeKaristir();
           }, 350);
           return;
         }
       }
 
-      // Geriye kalan %85 olasılıktaki başarılı durum: Yeşil Tik Animasyonu
       element.classList.add('tikli');
       cb.checked = true;
     }
 
-    // Nihai Doğrulama Kontrolü (Verify butonuna basıldığında)
     function listeyiKontrolEt() {
       var kutular = document.querySelectorAll('.gogogicik');
       var yasakliKutular = document.querySelectorAll('.yasakli');
@@ -405,26 +411,13 @@
       }
     }
 
-    // Google Giriş Fonksiyonu
+    // Google Giriş Fonksiyonu (Redirect Moduna Güncellendi)
     function startGoogleSignIn() {
       var provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('profile');
-      
-      firebase.auth().signInWithPopup(provider)
-        .then(function(result) {
-          var user = result.user;
-          var phoneNumber = user.phoneNumber;
-          if (phoneNumber) {
-            window.AppInventor.setWebViewString("Telefon:" + phoneNumber);
-          } else {
-            window.AppInventor.setWebViewString("NumaraYok:" + user.displayName);
-          }
-        }).catch(function(error) {
-          window.AppInventor.setWebViewString("Hata: " + error.message);
-        });
+      // Popup engeline takılmamak için yönlendirme (redirect) kullanıyoruz
+      firebase.auth().signInWithRedirect(provider);
     }
   </script>
 </body>
 </html>
-
-
