@@ -29,7 +29,7 @@
       line-height: 1.5;
     }
 
-    /* reCAPTCHA Pop-up Pencere Tasarımı */
+    /* Tam reCAPTCHA Pencere Matrisi Tasarımı */
     #gicik-recaptcha-pencere {
       display: none;
       width: 310px;
@@ -44,38 +44,79 @@
       color: #fff;
       padding: 16px 16px 24px 16px;
       font-weight: 400;
-      line-height: 1.2;
+      line-height: 1.3;
     }
     .rc-baslik-ana {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 500;
     }
-    .rc-liste-icerik {
-      padding: 10px 5px;
-      max-height: 280px;
-      overflow-y: auto;
+    
+    /* Yan yana 3'lü reCAPTCHA Grid Yapısı */
+    .rc-grid-icerik {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 4px 0;
+      background-color: #ccc; /* Karelerin arasındaki ince çizgiler için */
+      border: 4px solid #fff;
     }
-    .onay-satiri {
+    
+    /* Her bir reCAPTCHA seçeneği (Kareler) */
+    .onay-kare-kutusu {
+      position: relative;
+      background-color: #f9f9f9;
+      aspect-ratio: 1 / 1; /* Tam kare olmasını sağlar */
       display: flex;
       align-items: center;
-      padding: 8px 10px;
-      margin-bottom: 4px;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 13px;
-      color: #222;
-    }
-    .onay-satiri input {
-      margin-right: 12px;
-      width: 18px;
-      height: 18px;
+      justify-content: center;
+      padding: 6px;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 10px;
+      color: #333;
+      font-weight: bold;
       cursor: pointer;
+      user-select: none;
+      transition: all 0.1s ease;
     }
+    
+    /* Gizli görünmez input */
+    .onay-kare-kutusu input {
+      display: none;
+    }
+
+    /* Bir kare seçildiğinde (reCAPTCHA stili mavi daralma efekti) */
+    .onay-kare-kutusu.secildi {
+      transform: scale(0.92);
+      outline: 2px solid #1a73e8;
+      z-index: 2;
+      background-color: #fff;
+    }
+
+    /* Mavi Tik İşareti */
+    .onay-kare-kutusu.secildi::before {
+      content: "✓";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      background-color: #1a73e8;
+      color: white;
+      width: 14px;
+      height: 14px;
+      font-size: 10px;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .rc-alt-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 10px 5px 5px 5px;
       border-top: 1px solid #ccc;
+      background: white;
     }
     .rc-ikonlar {
       display: flex;
@@ -115,17 +156,18 @@
       <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
     </div>
     
-    <div class="rc-liste-icerik">
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir robot değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir yapay zeka sistemi değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir kaba kuvvet yazılımı değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir cihaz çiftliği değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir otomatik tıklama botu değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben kötü amaçlı bir hacker değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir çamaşır makinesi değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben akıllı bir buzdolabı değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Ben bir web kazıyıcı değilim.</span></div>
-      <div class="onay-satiri"><input type="checkbox" class="gogogicik"><span>Kesinlikle gerçek bir insanım.</span></div>
+    <div class="rc-grid-icerik">
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>Robot Değilim</span></label>
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>AI Değilim</span></label>
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>Yazılım Değilim</span></label>
+      
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>Cihaz Çiftliği Değilim</span></label>
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>Bot Değilim</span></label>
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>Hacker Değilim</span></label>
+      
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>Çamaşır Makinesi Değilim</span></label>
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>Buzdolabı Değilim</span></label>
+      <label class="onay-kare-kutusu"><input type="checkbox" class="gogogicik"><span>Scraper Değilim</span></label>
     </div>
 
     <div class="rc-alt-bar">
@@ -152,13 +194,26 @@
     
     firebase.initializeApp(firebaseConfig);
 
+    // Karelere tıklanınca reCAPTCHA seçim animasyonunu çalıştırma
+    document.querySelectorAll('.onay-kare-kutusu').forEach(function(kare) {
+      kare.addEventListener('click', function() {
+        var chk = this.querySelector('input');
+        // Tıklama durumuna göre class ekle/çıkar
+        if(chk.checked) {
+          this.classList.add('secildi');
+        } else {
+          this.classList.remove('secildi');
+        }
+      });
+    });
+
     // 1. Aşama: Gerçek reCAPTCHA v2 Başlatma
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
       'size': 'normal',
       'callback': function(response) {
         document.getElementById("recaptcha-container").style.display = "none";
         document.getElementById("baslik-metni").style.display = "none";
-        document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+        document.getElementById("gicik-recaptence-pencere" ? "gicik-recaptcha-pencere" : "gicik-recaptcha-pencere").style.display = "block";
       }
     });
     window.recaptchaVerifier.render();
