@@ -5,7 +5,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
-  <!-- Firebase Kütüphaneleri -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
@@ -13,14 +12,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start; /* Mobilde doğal dikey kayma için yukarıdan başlatıyoruz */
+      justify-content: flex-start;
       min-height: 100vh;
       margin: 0;
       background-color: #f5f5f5;
       font-family: 'Roboto', Arial, sans-serif;
       padding: 15px 10px;
       box-sizing: border-box;
-      -webkit-overflow-scrolling: touch; /* Mobil WebView kaydırma yumuşaklığı */
+      -webkit-overflow-scrolling: touch;
     }
     .uyari-metni {
       max-width: 310px;
@@ -32,7 +31,6 @@
       line-height: 1.4;
     }
 
-    /* Orijinal reCAPTCHA Pencere Tasarımı */
     #gicik-recaptcha-pencere {
       display: none;
       width: 310px;
@@ -55,7 +53,6 @@
       font-weight: 500;
     }
     
-    /* Gelişmiş Canlı Hata Paneli */
     #canli-hata-paneli {
       display: none;
       background-color: #fde8e8;
@@ -68,7 +65,6 @@
       animation: belirmeEfekti 0.2s ease;
     }
     
-    /* H-captcha Dinamik İlerleme Barı Paneli */
     #ai-loader {
       display: none;
       background-color: #e8f0fe;
@@ -108,14 +104,12 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Dikey Liste Alanı (Kaydırma kilitlenmesini önlemek için dikey sınırlar kaldırıldı) */
     .rc-liste-icerik {
       padding: 5px 0;
       border: 1px solid #dfdfdf;
       margin: 4px 0;
     }
     
-    /* Her Onay Satırının Tasarımı */
     .onay-satiri {
       display: flex;
       align-items: center;
@@ -136,7 +130,6 @@
       align-items: center;
     }
 
-    /* Animasyonlu Özel Kutucuk Alanı */
     .ozel-kutu-alani {
       position: relative;
       width: 22px;
@@ -145,7 +138,7 @@
       flex-shrink: 0;
     }
     .onay-satiri input[type="checkbox"] {
-      display: none; /* Standart checkbox'ı gizle */
+      display: none;
     }
     .kutu-gorsel {
       width: 100%;
@@ -162,7 +155,6 @@
       transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* GÜÇLENDİRİLMİŞ YEŞİL TİK ANİMASYONU */
     .onay-satiri.tikli .kutu-gorsel {
       background-color: #2e7d32;
       border-color: #2e7d32;
@@ -173,7 +165,6 @@
       content: "✓";
     }
 
-    /* GÜÇLENDİRİLMİŞ ŞİDDETLİ KIRMIZI X ANİMASYONU */
     .onay-satiri.patladi .kutu-gorsel {
       background-color: #c62828;
       border-color: #c62828;
@@ -242,19 +233,16 @@
 </head>
 <body>
 
-  <!-- İlk Başta Çıkan Gerçek Metin ve ReCAPTCHA Kutusu -->
   <div class="uyari-metni" id="baslik-metni">
     Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.
   </div>
   <div id="recaptcha-container"></div>
 
-  <!-- Gerçek reCAPTCHA Geçilince Açılan Dikey Liste Paneli -->
   <div id="gicik-recaptcha-pencere">
     <div class="rc-mavi-baslik">
       <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
     </div>
     
-    <!-- Hareketli / Canlı İlerleyen H-captcha İlerleme Barı -->
     <div id="ai-loader">
       <div>🧩 H-captcha soruları oluşturuluyor...</div>
       <div class="progress-bar-container">
@@ -262,10 +250,8 @@
       </div>
     </div>
 
-    <!-- Canlı Hata Mesaj Alanı -->
     <div id="canli-hata-paneli"></div>
     
-    <!-- JavaScript ile Dinamik Doldurulacak Alan -->
     <div class="rc-liste-icerik" id="dinamik-liste"></div>
 
     <div class="rc-alt-bar">
@@ -279,7 +265,6 @@
   </div>
 
   <script>
-    // Gerçek Firebase Bilgilerin
     var firebaseConfig = {
       apiKey: "AIzaSyC_UbnaLpQv8Lnq65QQL9ARRZEPRZqW2d8",
       authDomain: "h-messenger-1779c.firebaseapp.com",
@@ -292,7 +277,6 @@
     
     firebase.initializeApp(firebaseConfig);
 
-    // WebView yönlendirmesinden gelen Google verilerini her sayfa açılışında yakala
     firebase.auth().getRedirectResult()
       .then(function(result) {
         if (result.user) {
@@ -309,14 +293,12 @@
         yollaAppInventor("Hata: " + error.message);
       });
 
-    // App Inventor WebViewString Güvenli İletişim Fonksiyonu
     function yollaAppInventor(deger) {
       if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
         window.AppInventor.setWebViewString(deger);
       }
     }
 
-    // 1. AŞAMA: Gerçek reCAPTCHA v2 Doğrulayıcı Tanımlaması
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
       'size': 'normal',
       'callback': function(response) {
@@ -345,7 +327,6 @@
       console.error("Render hatası:", e);
     }
 
-    // YÜZLERCE KOMİK VE ABSÜRT SORUYU ANINDA UYDURAN KELİME KÜTÜPHANELERİ
     const sifatlar = ["uykulu", "yorgun", "şaşkın", "nostaljik", "sinirli", "acıkan", "üşüyen", "mutlu", "telaşlı", "heyecanlı", "meraklı", "sakar", "kararsız", "enerjik", "üşengeç", "duygusal", "sabırsız", "keyifli", "dalgın", "uykucu"];
     const isimler = ["insan evladı", "fani", "çay tiryakisi", "öğrenci", "klavye emekçisi", "dünya vatandaşı", "kahve bağımlısı", "kedisever", "köpek dostu", "makarna canavarı", "pijama tutkunu", "gece kuşu", "yazılımcı", "baba", "dayı"];
     const eylemler = ["kod yazarken uyuya kalan", "otobüsü kaçırmamak için koşan", "pizza siparişini bekleyen", "kedi videoları izleyen", "şifresini her gün unutan", "metrobüste tutunmaya çalışan", "kaldırım taşlarına basmayan", "kulaklığı dolanan", "kargo gelince kapıya koşan", "banyoda şarkı söyleyen"];
@@ -355,13 +336,11 @@
     const zarflar = ["kazara", "isteyerek", "asla unutmadan", "bazen heyecanla", "istemsizce", "gizlice", "bilerek"];
     const eylemGecmisler = ["tatil yaptığımı", "internetsiz bir gün geçirdiğimi", "erken uyuduğumu", "buralardan uzaklaştığımı", "ödevimi zamanında teslim ettiğimi", "telefonu bıraktığımı"];
 
-    // Bot Terimleri
     const botAdlari = ["Selenium Bot", "Puppeteer Scripti", "DDoS Saldırı Modülü", "Scraper Spider", "AutoClicker Pro", "Tık Çiftliği Emülatörü", "GPT-5 Ajanı", "Python Request Tool", "SQL Injection Scripti", "cURL Otomasyonu", "Web Crawler Ajanı"];
     const versiyonlar = ["v1.0.4", "v4.2.1", "v9.9-beta", "v3.1.2", "v0.0.1-alpha", "v11.5.0-patch"];
     const istekSayilari = ["saniyede 5.000", "saniyede 10.000", "dakikada 50.000", "milisaniyede 500", "aralıksız binlerce"];
     const eylemlerBot = ["şifreleri denemek", "verileri sızdırmak", "tüm sayfayı kazımak", "istekleri manipüle etmek", "güvenlik duvarını aşmak", "sahte kullanıcı oluşturmak"];
 
-    // Tek bir normal (insansı) onay sorusu uydur
     function normalSoruUydur() {
       const rSifat1 = sifatlar[Math.floor(Math.random() * sifatlar.length)];
       const rSifat2 = sifatlar[Math.floor(Math.random() * sifatlar.length)];
@@ -393,7 +372,6 @@
       return sablonlar[Math.floor(Math.random() * sablonlar.length)];
     }
 
-    // Tek bir yasaklı bot/otomasyon sorusu uydur
     function yasakliSoruUydur() {
       const rBot = botAdlari[Math.floor(Math.random() * botAdlari.length)];
       const rVer = versiyonlar[Math.floor(Math.random() * versiyonlar.length)];
@@ -413,17 +391,23 @@
       return sablonlar[Math.floor(Math.random() * sablonlar.length)];
     }
 
-    // Dinamik, Sayısı ve İçeriği Değişen Liste Oluşturma Sistemi (Donma yapmaz, milisaniyede açılır)
+    function diziKaristir(dizi) {
+      let klon = [...dizi];
+      for (let i = klon.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [klon[i], klon[j]] = [klon[j], klon[i]];
+      }
+      return klon;
+    }
+
     function listeOlusturVeKaristir() {
       let listelement = document.getElementById("dinamik-liste");
       let loader = document.getElementById("ai-loader");
       if(!listelement) return;
       listelement.innerHTML = "";
 
-      // Dinamik yüklenme barını gösteriyoruz
       if(loader) {
         loader.style.display = "block";
-        // İlerleme barının dolması biter bitmez (800ms) soruları ekrana basıyoruz
         let barFill = loader.querySelector(".progress-bar-fill");
         if(barFill) {
           barFill.style.width = "0%";
@@ -434,14 +418,12 @@
       setTimeout(() => {
         if(loader) loader.style.display = "none";
 
-        // Gösterilebilecek dinamik adet sınırları (10-15 arası normal, 10-20 arası yasaklı)
-        const normalAdet = Math.floor(Math.random() * 6) + 10;  // 10 - 15 arası
-        const yasakliAdet = Math.floor(Math.random() * 11) + 10; // 10 - 20 arası
+        const normalAdet = Math.floor(Math.random() * 6) + 10;
+        const yasakliAdet = Math.floor(Math.random() * 11) + 10;
 
         const secilenNormaller = [];
         const secilenYasaklilar = [];
 
-        // Belirlenen adet kadar BENZERSİZ soruyu anında üret (Hafif döngü)
         while (secilenNormaller.length < normalAdet) {
           let soru = normalSoruUydur();
           if (!secilenNormaller.includes(soru)) {
@@ -456,17 +438,18 @@
           }
         }
 
-        // Objeleri standart kalıba döküyoruz - SYNTAX HATASI BURADA DÜZELTİLDİ!
-        const normalObjects = secilenNormaller.map(txt => ({ metin: txt }));
+        const normalObjects = [];
+        for (let i = 0; i < secilenNormaller.length; i++) {
+          normalObjects.push({ metin: secilenNormaller[i] });
+        }
+        
         const yasakliObjects = secilenYasaklilar;
-
-        // İki grubu birleştir ve karıştır
         let karisikListe = diziKaristir(normalObjects.concat(yasakliObjects));
 
         karisikListe.forEach(item => {
           let satir = document.createElement("div");
           satir.className = "onay-satiri";
-          satir.setAttribute("data-tip", item.tip || (item.mesaj ? 'yasakli' : 'normal'));
+          satir.setAttribute("data-tip", item.mesaj ? 'yasakli' : 'normal');
           
           satir.innerHTML = `
             <div class="sol-kisin">
@@ -486,10 +469,9 @@
         });
         
         window.scrollTo(0, 0);
-      }, 800); // 800 milisaniye sonra bar tamamen dolar ve sorular gelir!
+      }, 800);
     }
 
-    // Canlı Kırmızı Hata Paneli Yönetimi
     function canliHataGoster(mesaj) {
       let panel = document.getElementById("canli-hata-paneli");
       if(!panel) return;
@@ -502,7 +484,6 @@
       setTimeout(() => { panel.style.display = "none"; }, 4500);
     }
 
-    // %5 Şans ve Animasyon Yönetimi
     function kutuTikla(element, tip, mesaj) {
       var cb = element.querySelector('input[type="checkbox"]');
       if (element.classList.contains('tikli') || element.classList.contains('patladi')) return;
@@ -512,18 +493,18 @@
         cb.checked = true;
         setTimeout(function() {
           canliHataGoster(mesaj);
-          listeOlusturVeKaristir(); // Her şey sıfırlanır ve liste YENİDEN KARIŞIR
+          listeOlusturVeKaristir();
         }, 350);
         return;
       }
 
       if (tip === 'normal') {
-        if (Math.random() < 0.05) { // %5 İhtimalle Haksız Patlama (❌)
+        if (Math.random() < 0.05) {
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
             canliHataGoster("Yapay zeka kokusu alıyorum! bot saldırı araçları giriş yapamazlar.");
-            listeOlusturVeKaristir(); // Her şey sıfırlanır ve liste YENİDEN KARIŞIR
+            listeOlusturVeKaristir();
           }, 350);
           return;
         }
@@ -533,7 +514,6 @@
       cb.checked = true;
     }
 
-    // Doğrulama Kontrolü
     function listeyiKontrolEt() {
       var kutular = document.querySelectorAll('.gogogicik');
       var yasakliKutular = document.querySelectorAll('.yasakli');
@@ -552,7 +532,6 @@
       }
     }
 
-    // Google Giriş Fonksiyonu (Yönlendirme Melez Sistemi)
     function startGoogleSignIn() {
       yollaAppInventor("TriggerGoogleSignIn");
 
@@ -576,4 +555,5 @@
   </script>
 </body>
 </html>
+
 
