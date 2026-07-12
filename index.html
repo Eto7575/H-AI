@@ -337,24 +337,29 @@
 
     firebase.initializeApp(firebaseConfig);
 
-    // LOCALSTORAGE TABANLI 24 SAATLİK GEÇİŞ SİSTEMİ
+    // GÜVENLİ LOCALSTORAGE TABANLI 24 SAATLİK GEÇİŞ SİSTEMİ
     function localOturumKontrolEt() {
-      const verifiedAt = localStorage.getItem('recaptcha_verified_at');
-      if (verifiedAt) {
-        const diff = Date.now() - parseInt(verifiedAt, 10);
-        const twentyFourHours = 24 * 60 * 60 * 1000; // Milisaniye cinsinden 24 saat
-        
-        if (diff < twentyFourHours) {
-          // Son 24 saat içinde başarıyla doğrulanmışsa doğrudan geçiş ver
-          document.getElementById("baslik-metni").style.display = "none";
-          document.querySelector(".recaptcha-wrapper").style.display = "none";
-          document.getElementById("gicik-recaptcha-pencere").style.display = "none";
-          yollaAppInventor("RobotDegil");
-          return true;
+      try {
+        const verifiedAt = localStorage.getItem('recaptcha_verified_at');
+        if (verifiedAt) {
+          const diff = Date.now() - parseInt(verifiedAt, 10);
+          const twentyFourHours = 24 * 60 * 60 * 1000; // Milisaniye cinsinden 24 saat
+          
+          if (diff < twentyFourHours) {
+            // Son 24 saat içinde başarıyla doğrulanmışsa doğrudan geçiş ver
+            document.getElementById("baslik-metni").style.display = "none";
+            document.querySelector(".recaptcha-wrapper").style.display = "none";
+            document.getElementById("gicik-recaptcha-pencere").style.display = "none";
+            yollaAppInventor("RobotDegil");
+            return true;
+          }
         }
+      } catch (e) {
+        // Cihazın DOM depolama ayarı kapalıysa buraya düşer ve kodun çökmesi engellenir
+        console.warn("Yerel hafıza erişim izni yok:", e);
       }
       
-      // Doğrulama yoksa veya süresi dolmuşsa ekranı göster
+      // Doğrulama yoksa, süresi dolmuşsa veya yerel hafıza kapalıysa normal ekranı göster
       document.getElementById("baslik-metni").style.display = "block";
       document.querySelector(".recaptcha-wrapper").style.display = "flex";
       return false;
@@ -362,7 +367,11 @@
 
     // Doğrulama başarıyla tamamlandığında yerel hafızaya kaydet
     function localOturumKaydet() {
-      localStorage.setItem('recaptcha_verified_at', Date.now());
+      try {
+        localStorage.setItem('recaptcha_verified_at', Date.now());
+      } catch (e) {
+        console.warn("Yerel hafızaya kayıt yapılamadı:", e);
+      }
     }
 
     // Sayfa açıldığında doğrudan yerel oturumu kontrol et
@@ -625,4 +634,3 @@
   </script>
 </body>
 </html>
-
