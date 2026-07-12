@@ -5,16 +5,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
-  <!-- Firebase Kütüphaneleri -->
+  <!-- Firebase Kütüphaneleri (Sadece Google Giriş/Auth için, Firestore kaldırıldı!) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
-    /* Google challenge pencerelerinin kaymasını önlemek için body sade tutuldu */
+    /* Kamera kapatıcı görselin tepeye sıfır oturması için üst padding sıfırlandı */
     body {
       margin: 0;
       background-color: #f5f5f5;
       font-family: 'Roboto', Arial, sans-serif;
-      padding: 10px;
+      padding: 0 10px 15px 10px;
       box-sizing: border-box;
       -webkit-overflow-scrolling: touch;
     }
@@ -29,29 +29,24 @@
       margin: 0 auto;
     }
 
-    /* Üst Kamera Deliğini Gizleyen / Havalı Gösteren Logo Alanı */
+    /* Üst Kamera Deliğini Gizleyen Havalı Görsel Alanı */
     .camera-logo-container {
       display: flex;
       justify-content: center;
       align-items: center;
       width: 100%;
-      padding-top: 28px; /* Kamera deliği (punch hole) / notch için cihaz güvenli alanı */
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
     .camera-logo {
-      width: 85px; /* Havalı durması için ideal genişlik */
+      width: 100%;
+      max-width: 360px; /* Ekran genişliğine göre tam uyum sağlar */
       height: auto;
+      display: block;
       object-fit: contain;
-      filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.15));
-      animation: logoGiris 0.5s ease-out;
-    }
-
-    @keyframes logoGiris {
-      from { transform: scale(0.85); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
     }
 
     .uyari-metni {
+      display: none; /* İlk başta kontrol yapılana kadar gizli tutulur */
       width: 100%;
       text-align: center;
       font-size: 13px;
@@ -63,7 +58,7 @@
 
     /* Google reCAPTCHA kutusunu ortalayan sarmalayıcı */
     .recaptcha-wrapper {
-      display: flex;
+      display: none; /* İlk başta kontrol yapılana kadar gizli tutulur */
       justify-content: center;
       width: 100%;
       margin-top: 5px;
@@ -285,9 +280,9 @@
 
   <div class="main-container">
 
-    <!-- Havalı Logo Alanı (Cihazlardaki kamera deliği hizalaması için optimize edildi) -->
+    <!-- Gerçek Kamera Deliği Gizleme Görseli (56298.png) -->
     <div class="camera-logo-container">
-      <img src="4667-removebg-preview.png" class="camera-logo" alt="H-Messenger Logo" onerror="this.style.display='none'">
+      <img src="56298.png" class="camera-logo" alt="Notch Cover" onerror="this.src='56298.png'">
     </div>
 
     <!-- İlk Başta Çıkan Gerçek Metin ve ReCAPTCHA Kutusu -->
@@ -339,8 +334,48 @@
       appId: "1:769297013571:web:3106ad119ae72e377b2df6",
       measurementId: "G-YKTLBVH5CW"
     };
-    
+
     firebase.initializeApp(firebaseConfig);
+
+    // LOCALSTORAGE TABANLI 24 SAATLİK GEÇİŞ SİSTEMİ
+    function localOturumKontrolEt() {
+      const verifiedAt = localStorage.getItem('recaptcha_verified_at');
+      if (verifiedAt) {
+        const diff = Date.now() - parseInt(verifiedAt, 10);
+        const twentyFourHours = 24 * 60 * 60 * 1000; // Milisaniye cinsinden 24 saat
+        
+        if (diff < twentyFourHours) {
+          // Son 24 saat içinde başarıyla doğrulanmışsa doğrudan geçiş ver
+          document.getElementById("baslik-metni").style.display = "none";
+          document.querySelector(".recaptcha-wrapper").style.display = "none";
+          document.getElementById("gicik-recaptcha-pencere").style.display = "none";
+          yollaAppInventor("RobotDegil");
+          return true;
+        }
+      }
+      
+      // Doğrulama yoksa veya süresi dolmuşsa ekranı göster
+      document.getElementById("baslik-metni").style.display = "block";
+      document.querySelector(".recaptcha-wrapper").style.display = "flex";
+      return false;
+    }
+
+    // Doğrulama başarıyla tamamlandığında yerel hafızaya kaydet
+    function localOturumKaydet() {
+      localStorage.setItem('recaptcha_verified_at', Date.now());
+    }
+
+    // Sayfa açıldığında doğrudan yerel oturumu kontrol et
+    window.onload = function() {
+      const gectiMi = localOturumKontrolEt();
+      if (!gectiMi) {
+        try {
+          window.recaptchaVerifier.render();
+        } catch(e) {
+          console.error("Render hatası:", e);
+        }
+      }
+    };
 
     firebase.auth().getRedirectResult()
       .then(function(result) {
@@ -386,74 +421,42 @@
       }
     });
 
-    try {
-      window.recaptchaVerifier.render();
-    } catch(e) {
-      console.error("Render hatası:", e);
-    }
+    // BİYOLOJİK VE EVRENSEL İNSAN ÖZELLİKLERİ (Kişisel tercihlerden/kahvelerden arındırılmış)
+    const normalSablonlar = [
+      "Hayatta kalabilmek için her gün düzenli olarak temiz su içerim.",
+      "Vücudumdaki hücrelerin yaşaması için havadan sürekli nefes alırım.",
+      "Gözlerimin kurumaması için gün içinde istemsizce göz kırparım.",
+      "Uykum geldiğinde uyuyup dinlenen biyolojik bir canlıyım.",
+      "Sıcaklık çok yükseldiğinde vücut ısımı dengede tutmak için terlerim.",
+      "Acıktığım zaman enerji toplamak için besin tüketirim.",
+      "Kalbimin göğsümde her saniye kan pompaladığını hissedebiliyorum.",
+      "Hava çok soğuduğunda ısınabilmek için istemsizce titrerim.",
+      "Hapşırırken gözlerimi kontrol dışı kapatan biriyim.",
+      "Zaman ilerledikçe büyüyen ve yaşlanan fani bir insanım.",
+      "Üzüldüğümde ya da çok mutlu olduğumda gözyaşı dökebilirim.",
+      "Dünyadaki diğer canlılar gibi yer çekiminden etkilenen bir yapım var.",
+      "Vücut sıcaklığım normal durumlarda ortalama 36-37 derece civarındadır.",
+      "Fiziksel dünyada bir nesneye dokunduğumda onun sertliğini hissederim.",
+      "Işıklı bir ortama girdiğimde göz bebeklerim otomatik olarak küçülür."
+    ];
 
-    const sifatlar = ["uykulu", "yorgun", "şaşkın", "nostaljik", "sinirli", "acıkan", "üşüyen", "mutlu", "telaşlı", "heyecanlı", "meraklı", "sakar", "kararsız", "enerjik", "üşengeç", "duygusal", "sabırsız", "keyifli", "dalgın", "uykucu"];
-    const isimler = ["insan evladı", "fani", "çay tiryakisi", "öğrenci", "klavye emekçisi", "dünya vatandaşı", "kahve bağımlısı", "kedisever", "köpek dostu", "makarna canavarı", "pijama tutkunu", "gece kuşu", "yazılımcı", "baba", "dayı"];
-    const eylemler = ["kod yazarken uyuya kalan", "otobüsü kaçırmamak için koşan", "pizza siparişini bekleyen", "kedi videoları izleyen", "şifresini her gün unutan", "metrobüste tutunmaya çalışan", "kaldırım taşlarına basmayan", "kulaklığı dolanan", "kargo gelince kapıya koşan", "banyoda şarkı söyleyen"];
-    const icecekler = ["sıcak çay", "sert bir kahve", "portakal suyu", "soğuk limonata", "tuzlu ayran", "demli çay", "filtre kahve"];
-    const eylemDurumlar = ["ayılamayan", "kendine gelemeyen", "çalışmaya başlayamayan", "konuşamayan", "gülmeden duramayan", "odaklanamayan"];
-    const duygular = ["kalp kırıklığına", "derin duygulara", "gülme krizlerine", "empati yeteneğine", "ani hüzünlere"];
-    const zarflar = ["kazara", "isteyerek", "asla unutmadan", "bazen heyecanla", "istemsizce", "gizlice", "bilerek"];
-    const eylemGecmisler = ["tatil yaptığımı", "internetsiz bir day geçirdiğimi", "erken uyudumu", "buralardan uzaklaştığımı", "ödevimi zamanında teslim ettiğimi", "telefonu bıraktığımı"];
-
-    const botAdlari = ["Selenium Bot", "Puppeteer Scripti", "DDoS Saldırı Modülü", "Scraper Spider", "AutoClicker Pro", "Tık Çiftliği Emülatörü", "GPT-5 Ajanı", "Python Request Tool", "SQL Injection Scripti", "cURL Otomasyonu", "Web Crawler Ajanı"];
-    const versiyonlar = ["v1.0.4", "v4.2.1", "v9.9-beta", "v3.1.2", "v0.0.1-alpha", "v11.5.0-patch"];
-    const istekSayilari = ["saniyede 5.000", "saniyede 10.000", "dakikada 50.000", "milisaniyede 500", "aralıksız binlerce"];
-    const eylemlerBot = ["şifreleri denemek", "verileri sızdırmak", "tüm sayfayı kazımak", "istekleri manipüle etmek", "güvenlik duvarını aşmak", "sahte kullanıcı oluşturmak"];
+    // İNSANLARIN YAPMASININ BİYOLOJİK OLARAK İMKANSIZ OLDUĞU BOT BEYANLARI
+    const yasakliSablonlar = [
+      { metin: "Hiç uyumadan ve yemek yemeden yıllarca aralıksız veri kazıyabilirim.", mesaj: "Sürekli veri taraması yapan botlar engellendi!" },
+      { metin: "Aynı anda saniyede 15.000 farklı web sayfasını ziyaret edebiliyorum.", mesaj: "Olağanüstü tarama hızı! Otomasyon sistemi tespiti." },
+      { metin: "Sisteme sızıp açıkları bulmak için özel kodlanmış bir siber virüsüm.", mesaj: "Siber güvenlik duvarı zararlı yazılımı engelledi!" },
+      { metin: "Arka planda insan tıklamalarını taklit eden bir tık çiftliği yazılımıyım.", mesaj: "Tık çiftliği simülasyonları içeri giremez!" },
+      { metin: "İnternetteki milyonlarca şifreyi saniyeler içinde otomatik denerim.", mesaj: "Kaba kuvvet (Brute Force) saldırı aracı engellendi!" },
+      { metin: "Web sitelerindeki tüm bilgileri anında kopyalayıp veritabanına kaydeden bir scraper botuyum.", mesaj: "Veri kazıyıcı (Scraper) botlar durduruldu!" },
+      { metin: "Ben tamamen sunucu kodları ve algoritmalarla çalışan sahte bir yazılımım.", mesaj: "Yazılımsal otomasyon botları engellendi!" }
+    ];
 
     function normalSoruUydur() {
-      const rSifat1 = sifatlar[Math.floor(Math.random() * sifatlar.length)];
-      const rSifat2 = sifatlar[Math.floor(Math.random() * sifatlar.length)];
-      const rIsim1 = isimler[Math.floor(Math.random() * isimler.length)];
-      const rEylem = eylemler[Math.floor(Math.random() * eylemler.length)];
-      const rIcecek = icecekler[Math.floor(Math.random() * icecekler.length)];
-      const rEylemDurum = eylemDurumlar[Math.floor(Math.random() * eylemDurumlar.length)];
-      const rDuygu = duygular[Math.floor(Math.random() * duygular.length)];
-      const rZarf = zarflar[Math.floor(Math.random() * zarflar.length)];
-      const rEylemGecmis = eylemGecmisler[Math.floor(Math.random() * eylemGecmisler.length)];
-
-      const sablonlar = [
-        `Ben bir ${rSifat1} ${rIsim1} değilim.`,
-        `Gözlemlerime göre ben ${rEylem} bir ${rIsim1}yim.`,
-        `Ruhum ${rSifat1}, bedenim ise ${rSifat2} bir fani.`,
-        `Sabahları ${rIcecek} içmeden ${rEylemDurum} biriyim.`,
-        `Yapay zekadan daha az zekiyim ama ${rDuygu} sahibiyim.`,
-        `Kendimi bildim bileli ${rSifat1} bir insan evladıyım.`,
-        `Herhangi bir ${rIsim1} ile uzaktan yakından bağım bulunmuyor.`,
-        `Caps Lock tuşunu ${rZarf} kullanan standart bir internet kullanıcısıyım.`,
-        `En son ne zaman ${rEylemGecmis} hatırlamayan biriyim.`,
-        `Sadece kendi halinde ${rSifat1} bir çay tiryakisiyim.`,
-        `Gün içinde en az 5 kez şifremi unutan o faniyim.`,
-        `Şu an tamamen ${rZarf} ${rEylem} o çaresiz ${rIsim1}yim.`,
-        `Günde en az 3 saat ${rIcecek} bardağına bakan ${rSifat1} biriyim.`,
-        `Bir robotla asla oturup ${rIcecek} içemeyecek olan faniyim.`
-      ];
-
-      return sablonlar[Math.floor(Math.random() * sablonlar.length)];
+      return normalSablonlar[Math.floor(Math.random() * normalSablonlar.length)];
     }
 
     function yasakliSoruUydur() {
-      const rBot = botAdlari[Math.floor(Math.random() * botAdlari.length)];
-      const rVer = versiyonlar[Math.floor(Math.random() * versiyonlar.length)];
-      const rIstek = istekSayilari[Math.floor(Math.random() * istekSayilari.length)];
-      const rEylemBot = eylemlerBot[Math.floor(Math.random() * eylemlerBot.length)];
-      const rZarf = zarflar[Math.floor(Math.random() * zarflar.length)];
-
-      const sablonlar = [
-        { metin: `Mevcut sistemde ${rBot} ${rVer} versiyonu olarak çalışmaktayım.`, mesaj: `${rBot} botları kapı dışarı! bot saldırı araçları giriş yapamazlar.` },
-        { metin: `Doğrudan arka planda ${rIstek} istek atan bir ${rBot} scriptiyim.`, mesaj: `DDoS saldırı girişimi engellendi! Yapay zeka kokusu alıyorum.` },
-        { metin: `Sisteme sızıp ${rEylemBot} için kodlanmış bir siber aracım.`, mesaj: `Sızma aracı engellendi! bot saldırı araçları giriş yapamazlar.` },
-        { metin: `Sadece ${rBot} kütüphane kullanarak burayı taramaya geldim.`, mesaj: `Otomasyon sistemi tespit edildi! Script istekleri engellendi.` },
-        { metin: `Görünüşte insan kılığına girmiş bir ${rBot} dil modeliyim.`, mesaj: `Yapay zeka modelleri bu kapıdan geçemez!` },
-        { metin: `Tamamen ${rZarf} tetiklenmiş bir ${rBot} otomasyonuyum.`, mesaj: `Otomasyon araçları bu sisteme giremez!` }
-      ];
-
-      return sablonlar[Math.floor(Math.random() * sablonlar.length)];
+      return yasakliSablonlar[Math.floor(Math.random() * yasakliSablonlar.length)];
     }
 
     function diziKaristir(dizi) {
@@ -484,7 +487,7 @@
         if(loader) loader.style.display = "none";
 
         const normalAdet = Math.floor(Math.random() * 6) + 10;
-        const yasakliAdet = Math.floor(Math.random() * 11) + 10;
+        const yasakliAdet = Math.floor(Math.random() * 6) + 10;
 
         const secilenNormaller = [];
         const secilenYasaklilar = [];
@@ -589,6 +592,8 @@
       yasakliKutular.forEach(function(kutu) { if (kutu.checked) { yasakliSeciliMi = true; } });
 
       if (hepsiSecili && !yasakliSeciliMi) {
+        // Oturumu yerel tarayıcı hafızasına güvenle kaydedip geçiş veriyoruz
+        localOturumKaydet();
         document.getElementById("gicik-recaptcha-pencere").style.display = "none";
         yollaAppInventor("RobotDegil");
       } else {
@@ -620,3 +625,4 @@
   </script>
 </body>
 </html>
+
