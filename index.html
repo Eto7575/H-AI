@@ -5,9 +5,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
-  <!-- Gerekli Firebase Kütüphaneleri -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
+  
+  <!-- Firebase Kütüphaneleri (Senkron yüklenerek WebView çökmesi engellendi) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  
+  <!-- Resmi Google ReCAPTCHA Scripti (WebView dinamik yükleme engelini aşmak için eklendi) -->
+  <script src="https://www.google.com/recaptcha/api.js"></script>
+
   <style>
     /* Kamera kapatıcı görselin tepeye sıfır oturması için üst padding sıfırlandı */
     body {
@@ -328,8 +333,8 @@
 </head>
 <body>
 
-  <!-- main-container her zaman görünecek şekilde CSS'ten 'display: none' kuralı temizlendi -->
-  <div class="main-container" id="main-container-id">
+  <!-- main-container her zaman ilk saniyede görünür -->
+  <div class="main-container" id="main-container-id" style="display: flex;">
 
     <!-- Gerçek Kamera Deliği Gizleme Görseli (56298.png) -->
     <div class="camera-logo-container">
@@ -393,10 +398,7 @@
 
     // SAYFA HAZIR OLDUĞUNDA TETİKLENEN ANA BAŞLATICI
     document.addEventListener("DOMContentLoaded", function() {
-      // Doğrulanmadıysa, arayüzü ve iskelet yükleyiciyi anında görünür yap
-      document.getElementById("main-container-id").style.display = "flex";
-
-      // Kütüphane yükleme kontrolü (İnternet yoksa çökmeden H-captchaları açar)
+      // Kütüphane yükleme kontrolü (Çevrimdışı durumlarda çökmeden H-captchaları açar)
       if (typeof firebase === 'undefined') {
         console.warn("Firebase bulunamadı, offline mod aktif.");
         kurtarmaModunuTetikle();
