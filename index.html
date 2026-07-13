@@ -475,7 +475,7 @@
       "Fiziksel dünyada bir nesneye dokunduğumda onun sertliğini hissederim.",
       "Işıklı bir ortama girdiğimde göz bebeklerim otomatik olarak küçülür.",
       "Yürürken veya hareket ederken kemik ve kas sistemimi kullanırım.",
-      "Düşüncelerimi, sevinçlerimi ve korkularımı yaşayan bir bilince sahibim.",
+      "Düşüncelerimi, sevinçlerimi Henderson ve korkularımı yaşayan bir bilince sahibim.",
       "Derim, fiziksel bir darbe aldığında acıyı ve sızıyı beynime iletir."
     ];
 
@@ -591,7 +591,8 @@
       }
 
       if (tip === 'normal') {
-        if (Math.random() < 0.05) {
+        // %3 Hata Olasılığı Ayarı Burada Tamamlandı!
+        if (Math.random() < 0.03) {
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
@@ -647,5 +648,4 @@
   </script>
 </body>
 </html>
-
 
