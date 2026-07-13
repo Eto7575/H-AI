@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
-  <!-- Ağır kütüphaneler defer edilerek sayfa açılış hızı 100 kat hızlandırıldı -->
+  <!-- Gerekli Firebase Kütüphaneleri -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
   <style>
@@ -19,9 +19,9 @@
       -webkit-overflow-scrolling: touch;
     }
     
-    /* Tüm içeriği güvenle ortalayan ana sarmalayıcı (İlk başta gizli tutulur) */
+    /* Tüm içeriği güvenle ortalayan ana sarmalayıcı */
     .main-container {
-      display: none; 
+      display: flex; 
       flex-direction: column;
       align-items: center;
       width: 100%;
@@ -304,7 +304,7 @@
   </style>
 
   <script>
-    // Gelişmiş, Milisaniyelik Güvenilir İletişim Köprüsü (JS Bridge canavar gibi çalışır)
+    // Milisaniyelik Güvenilir İletişim Köprüsü (JS Bridge canavar gibi çalışır)
     function yollaAppInventor(deger) {
       function gonder() {
         if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
@@ -314,9 +314,7 @@
         return false;
       }
 
-      // İlk deneme (anında)
       if (!gonder()) {
-        // App Inventor köprüsü kurulana kadar her 100ms'de bir tekrar dener (Maksimum 2 saniye)
         let deneme = 0;
         let tasiyiciInterval = setInterval(function() {
           deneme++;
@@ -326,27 +324,11 @@
         }, 100);
       }
     }
-
-    // 1. ADIM: SAYFA DOSYALARI DAHA İNMEDEN ANINDA ÇEREZ KONTROLÜ
-    let zatenDogrulanmis = false;
-    try {
-      const verifiedAt = localStorage.getItem('recaptcha_verified_at');
-      if (verifiedAt) {
-        const diff = Date.now() - parseInt(verifiedAt, 10);
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        if (diff < twentyFourHours) {
-          zatenDogrulanmis = true;
-          yollaAppInventor("RobotDegil");
-        }
-      }
-    } catch (e) {
-      console.warn("Yerel hafıza kontrol edilemedi:", e);
-    }
   </script>
 </head>
 <body>
 
-  <!-- main-container varsayılan olarak CSS ile gizlidir, zaten doğrulanmışsa hiç açılmaz, internet harcanmaz -->
+  <!-- main-container her zaman görünecek şekilde CSS'ten 'display: none' kuralı temizlendi -->
   <div class="main-container" id="main-container-id">
 
     <!-- Gerçek Kamera Deliği Gizleme Görseli (56298.png) -->
@@ -389,7 +371,7 @@
       <div class="rc-alt-bar">
         <div class="rc-ikonlar">
           <span class="rc-ikon">🔄</span>
-          <span class="rc-ikon|">🎧</span>
+          <span class="rc-ikon">🎧</span>
           <span class="rc-ikon">ℹ️</span>
         </div>
         <button id="verify-butonu" onclick="listeyiKontrolEt()">Verify</button>
@@ -409,20 +391,8 @@
       measurementId: "G-YKTLBVH5CW"
     };
 
-    // Doğrulama başarılı olduğunda yerel hafızaya kaydet
-    function localOturumKaydet() {
-      try {
-        localStorage.setItem('recaptcha_verified_at', Date.now());
-      } catch (e) {
-        console.warn("Yerel hafızaya kayıt yapılamadı:", e);
-      }
-    }
-
     // SAYFA HAZIR OLDUĞUNDA TETİKLENEN ANA BAŞLATICI
     document.addEventListener("DOMContentLoaded", function() {
-      // Eğer en başta zaten doğrulandığını bulduysak, arayüzü hiç yükleme ve dur!
-      if (zatenDogrulanmis) return;
-
       // Doğrulanmadıysa, arayüzü ve iskelet yükleyiciyi anında görünür yap
       document.getElementById("main-container-id").style.display = "flex";
 
@@ -563,14 +533,13 @@
       setTimeout(() => {
         if(loader) loader.style.display = "none";
 
-        // INFINITE LOOP GÜVENLİK BARİYERİ (Soru sayısı asla şablon havuzunu aşamaz!)
-        const normalAdet = Math.floor(Math.random() * 3) + 5;  // 5-7 arası
-        const yasakliAdet = Math.floor(Math.random() * 3) + 4; // 4-6 arası
+        // Güvenlik sınırı (Soru sayısı asla şablon havuzunu aşmaz)
+        const normalAdet = Math.floor(Math.random() * 3) + 5;  
+        const yasakliAdet = Math.floor(Math.random() * 3) + 4; 
 
         const secilenNormaller = [];
         const secilenYasaklilar = [];
 
-        // Havuz boyutu kontrol edilerek güvenli eşleşme yapılır
         const maxNormal = Math.min(normalAdet, normalSablonlar.length);
         while (secilenNormaller.length < maxNormal) {
           let soru = normalSoruUydur();
@@ -673,7 +642,6 @@
       yasakliKutular.forEach(function(kutu) { if (kutu.checked) { yasakliSeciliMi = true; } });
 
       if (hepsiSecili && !yasakliSeciliMi) {
-        localOturumKaydet();
         document.getElementById("gicik-recaptcha-pencere").style.display = "none";
         yollaAppInventor("RobotDegil");
       } else {
