@@ -111,10 +111,27 @@
       padding: 14px 14px 20px 14px;
       font-weight: 400;
       line-height: 1.3;
+      position: relative;
     }
     .rc-baslik-ana {
       font-size: 13px;
       font-weight: 500;
+      padding-right: 75px; /* Kronometre rozetinin metinle çakışmasını engeller */
+    }
+
+    /* Canlı Kronometre Rozeti */
+    #timer-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 11px;
+      background: rgba(0, 0, 0, 0.25);
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-family: monospace;
+      letter-spacing: 0.5px;
     }
     
     /* Gelişmiş Canlı Hata Paneli */
@@ -170,7 +187,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Dikey Liste Alanı (Pürüzsüz kaydırma eklendi) */
+    /* Dikey Liste Alanı (Büyük liste için WebView pürüzsüz kaydırma eklendi) */
     .rc-liste-icerik {
       padding: 5px 0;
       border: 1px solid #dfdfdf;
@@ -303,6 +320,85 @@
       background-color: #1557b0;
     }
 
+    /* PREMIUM TEBRİKLER BAŞARI MODALI */
+    #tebrikler-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    }
+    .modal-icerik {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 26px 20px;
+      text-align: center;
+      max-width: 310px;
+      width: 100%;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.35);
+      box-sizing: border-box;
+      animation: modalBelirme 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes modalBelirme {
+      from { transform: scale(0.8) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .modal-ikon {
+      width: 54px;
+      height: 54px;
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 15px auto;
+      box-shadow: 0 4px 10px rgba(46, 125, 50, 0.15);
+    }
+    .modal-baslik {
+      color: #1b5e20;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .modal-sure-metin {
+      font-size: 12px;
+      color: #455a64;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+    .modal-sure-vurgu {
+      font-size: 18px;
+      color: #1e88e5;
+      font-weight: 800;
+      display: block;
+      margin-top: 5px;
+      font-family: monospace;
+    }
+    .modal-buton {
+      background-color: #2e7d32;
+      color: #ffffff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+      transition: background 0.2s;
+    }
+    .modal-buton:hover {
+      background-color: #1b5e20;
+    }
+
     @media screen and (max-width: 480px) {
       iframe[title*="recaptcha"], iframe[src*="bframe"] {
         max-width: 100% !important;
@@ -356,6 +452,8 @@
     <div id="gicik-recaptcha-pencere">
       <div class="rc-mavi-baslik">
         <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
+        <!-- Canlı Çalışan Kronometre Göstergesi -->
+        <span id="timer-badge">Süre: 0.0s</span>
       </div>
       
       <div id="ai-loader">
@@ -381,6 +479,19 @@
 
   </div>
 
+  <!-- BAŞARI TEBRİK MODALI -->
+  <div id="tebrikler-modal">
+    <div class="modal-icerik">
+      <div class="modal-ikon">✓</div>
+      <div class="modal-baslik">TEBRİKLER!</div>
+      <div class="modal-sure-metin">
+        ROBOT OLMADIĞINIZI BAŞARIYLA DOĞRULADINIZ!
+        <span class="modal-sure-vurgu" id="final-sure">0.00 saniye</span>
+      </div>
+      <button class="modal-buton" onclick="modalKapatVeGonder()">Uygulamaya Dön</button>
+    </div>
+  </div>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyC_UbnaLpQv8Lnq65QQL9ARRZEPRZqW2d8",
@@ -391,6 +502,34 @@
       appId: "1:769297013571:web:3106ad119ae72e377b2df6",
       measurementId: "G-YKTLBVH5CW"
     };
+
+    // Kronometre Global Değişkenleri
+    let startTime = null;
+    let timerInterval = null;
+    let timerStarted = false;
+
+    // Kronometreyi Tamamen Sıfırlama Fonksiyonu
+    function resetTimer() {
+      clearInterval(timerInterval);
+      startTime = null;
+      timerStarted = false;
+      const badge = document.getElementById("timer-badge");
+      if (badge) badge.innerText = "Süre: 0.0s";
+    }
+
+    // Canlı Süre Güncelleyici (Her 100ms'de bir tetiklenir)
+    function updateLiveTimer() {
+      if (!startTime) return;
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      const badge = document.getElementById("timer-badge");
+      if (badge) badge.innerText = "Süre: " + elapsed + "s";
+    }
+
+    // Tebrik Modalı Kapatıcı ve MIT App Inventor Köprüsü
+    function modalKapatVeGonder() {
+      document.getElementById("tebrikler-modal").style.display = "none";
+      yollaAppInventor("RobotDegil");
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
       if (typeof firebase === 'undefined') {
@@ -512,6 +651,9 @@
       let loader = document.getElementById("ai-loader");
       if(!listelement) return;
       listelement.innerHTML = "";
+      
+      // Liste sıfırlandığı her an kronometreyi de güvenle sıfırlıyoruz
+      resetTimer();
 
       if(loader) {
         loader.style.display = "block";
@@ -525,11 +667,10 @@
       setTimeout(() => {
         if(loader) loader.style.display = "none";
 
-        // Havuzları kendi içlerinde karıştırıyoruz
         let karisikNormaller = diziKaristir(normalSablonlar);
         let karisikYasaklilar = diziKaristir(yasakliSablonlar);
 
-        // TAM 15 SORU SINIRI (Rastgele dağılımla 8 normal, 7 yasaklı soru seçilir)
+        // TAM 15 SORU SINIRI (8 normal, 7 yasaklı soru seçilir)
         let secilenNormaller = karisikNormaller.slice(0, 8);
         let secilenYasaklilar = karisikYasaklilar.slice(0, 7);
 
@@ -540,7 +681,6 @@
         
         const yasakliObjects = secilenYasaklilar;
         
-        // Seçilen 15 soruyu tek bir listede birleştirip son kez karıştırıyoruz
         let karisikListe = diziKaristir(normalObjects.concat(yasakliObjects));
 
         karisikListe.forEach(item => {
@@ -565,7 +705,6 @@
           listelement.appendChild(satir);
         });
         
-        // Listeyi en tepeye sıfırlıyoruz
         listelement.scrollTop = 0;
       }, 800);
     }
@@ -584,6 +723,13 @@
 
     // %5 HATA OLASILIĞI AYARI BURADA ÇALIŞIR
     function kutuTikla(element, tip, mesaj) {
+      // Akıllı Kronometre Tetikleyicisi (İlk dokunuş yapıldığı saniye zaman sayacı başlar)
+      if (!timerStarted) {
+        timerStarted = true;
+        startTime = Date.now();
+        timerInterval = setInterval(updateLiveTimer, 100);
+      }
+
       var cb = element.querySelector('input[type="checkbox"]');
       if (element.classList.contains('tikli') || element.classList.contains('patladi')) return;
 
@@ -598,7 +744,6 @@
       }
 
       if (tip === 'normal') {
-        // %5 olasılık filtresi tetiklenir
         if (Math.random() < 0.05) {
           element.classList.add('patladi');
           cb.checked = true;
@@ -624,8 +769,14 @@
       yasakliKutular.forEach(function(kutu) { if (kutu.checked) { yasakliSeciliMi = true; } });
 
       if (hepsiSecili && !yasakliSeciliMi) {
-        document.getElementById("gicik-recaptcha-pencere").style.display = "none";
-        yollaAppInventor("RobotDegil");
+        // Kronometreyi durdurup final süresini milisaniye doğruluğuyla hesaplıyoruz
+        clearInterval(timerInterval);
+        const finalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+        
+        // Başarı modalını güncelleyip görünür kılıyoruz
+        document.getElementById("final-sure").innerText = finalTime + " saniye";
+        document.getElementById("tebrikler-modal").style.display = "flex";
+        
       } else {
         canliHataGoster("Doğrulama başarısız! bot saldırı araçları giriş yapamazlar. Tüm doğru kutucukları işaretleyin.");
         listeOlusturVeKaristir();
@@ -655,4 +806,3 @@
   </script>
 </body>
 </html>
-
