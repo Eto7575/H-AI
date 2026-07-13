@@ -170,7 +170,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Dikey Liste Alanı (Büyük liste için WebView pürüzsüz kaydırma eklendi) */
+    /* Dikey Liste Alanı (Pürüzsüz kaydırma eklendi) */
     .rc-liste-icerik {
       padding: 5px 0;
       border: 1px solid #dfdfdf;
@@ -475,7 +475,7 @@
       "Fiziksel dünyada bir nesneye dokunduğumda onun sertliğini hissederim.",
       "Işıklı bir ortama girdiğimde göz bebeklerim otomatik olarak küçülür.",
       "Yürürken veya hareket ederken kemik ve kas sistemimi kullanırım.",
-      "Düşüncelerimi, sevinçlerimi Henderson ve korkularımı yaşayan bir bilince sahibim.",
+      "Düşüncelerimi, sevinçlerimi ve korkularımı yaşayan bir bilince sahibim.",
       "Derim, fiziksel bir darbe aldığında acıyı ve sızıyı beynime iletir."
     ];
 
@@ -525,9 +525,13 @@
       setTimeout(() => {
         if(loader) loader.style.display = "none";
 
-        // EN AZ 30 SORU GARANTİSİ (Havuzlardaki tüm benzersiz maddeler listeye dahil edilir: 18 + 15 = 33 Soru)
-        let secilenNormaller = diziKaristir(normalSablonlar);
-        let secilenYasaklilar = diziKaristir(yasakliSablonlar);
+        // Havuzları kendi içlerinde karıştırıyoruz
+        let karisikNormaller = diziKaristir(normalSablonlar);
+        let karisikYasaklilar = diziKaristir(yasakliSablonlar);
+
+        // TAM 15 SORU SINIRI (Rastgele dağılımla 8 normal, 7 yasaklı soru seçilir)
+        let secilenNormaller = karisikNormaller.slice(0, 8);
+        let secilenYasaklilar = karisikYasaklilar.slice(0, 7);
 
         const normalObjects = [];
         for (let i = 0; i < secilenNormaller.length; i++) {
@@ -535,6 +539,8 @@
         }
         
         const yasakliObjects = secilenYasaklilar;
+        
+        // Seçilen 15 soruyu tek bir listede birleştirip son kez karıştırıyoruz
         let karisikListe = diziKaristir(normalObjects.concat(yasakliObjects));
 
         karisikListe.forEach(item => {
@@ -559,7 +565,7 @@
           listelement.appendChild(satir);
         });
         
-        // Listeyi en üste kaydır
+        // Listeyi en tepeye sıfırlıyoruz
         listelement.scrollTop = 0;
       }, 800);
     }
@@ -576,6 +582,7 @@
       setTimeout(() => { panel.style.display = "none"; }, 4500);
     }
 
+    // %5 HATA OLASILIĞI AYARI BURADA ÇALIŞIR
     function kutuTikla(element, tip, mesaj) {
       var cb = element.querySelector('input[type="checkbox"]');
       if (element.classList.contains('tikli') || element.classList.contains('patladi')) return;
@@ -591,8 +598,8 @@
       }
 
       if (tip === 'normal') {
-        // %3 Hata Olasılığı Ayarı Burada Tamamlandı!
-        if (Math.random() < 0.03) {
+        // %5 olasılık filtresi tetiklenir
+        if (Math.random() < 0.05) {
           element.classList.add('patladi');
           cb.checked = true;
           setTimeout(function() {
