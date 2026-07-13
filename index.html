@@ -5,9 +5,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
-  <!-- Firebase Kütüphaneleri -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
     /* Kamera kapatıcı görselin tepeye sıfır oturması için üst padding sıfırlandı */
     body {
@@ -19,9 +16,9 @@
       -webkit-overflow-scrolling: touch;
     }
     
-    /* Tüm içeriği güvenle ortalayan ana sarmalayıcı */
+    /* Tüm içeriği güvenle ortalayan ana sarmalayıcı (İlk başta gizli tutulur) */
     .main-container {
-      display: flex;
+      display: none; 
       flex-direction: column;
       align-items: center;
       width: 100%;
@@ -39,15 +36,13 @@
     }
     .camera-logo {
       width: 100%;
-      max-width: 360px; /* Ekran genişliğine göre tam uyum sağlar */
+      max-width: 360px;
       height: auto;
       display: block;
       object-fit: contain;
     }
 
-    /* İlk başta görünür tutarak çökme durumlarında beyaz ekran kalmasını önlüyoruz */
     .uyari-metni {
-      display: block;
       width: 100%;
       text-align: center;
       font-size: 13px;
@@ -63,6 +58,34 @@
       justify-content: center;
       width: 100%;
       margin-top: 5px;
+      min-height: 78px;
+    }
+
+    /* Modern Shimmer Yükleme İskeleti */
+    .recaptcha-placeholder {
+      width: 304px;
+      height: 78px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #999;
+      position: relative;
+      overflow: hidden;
+    }
+    .recaptcha-placeholder::after {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+      transform: translateX(-100%);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      100% { transform: translateX(100%); }
     }
 
     /* Orijinal reCAPTCHA Pencere Tasarımı */
@@ -276,10 +299,42 @@
       }
     }
   </style>
+
+  <script>
+    // Gecikmesiz İletişim Köprüsü (JS Bridge hızlıca bağlanır)
+    function yollaAppInventor(deger) {
+      if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
+        window.AppInventor.setWebViewString(deger);
+      } else {
+        setTimeout(function() {
+          if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
+            window.AppInventor.setWebViewString(deger);
+          }
+        }, 150);
+      }
+    }
+
+    // 1. ADIM: SAYFA DOSYALARI DAHA İNMEDEN ANINDA ÇEREZ KONTROLÜ
+    let zatenDogrulanmis = false;
+    try {
+      const verifiedAt = localStorage.getItem('recaptcha_verified_at');
+      if (verifiedAt) {
+        const diff = Date.now() - parseInt(verifiedAt, 10);
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        if (diff < twentyFourHours) {
+          zatenDogrulanmis = true;
+          yollaAppInventor("RobotDegil");
+        }
+      }
+    } catch (e) {
+      console.warn("Yerel hafıza kontrol edilemedi:", e);
+    }
+  </script>
 </head>
 <body>
 
-  <div class="main-container">
+  <!-- main-container varsayılan olarak CSS ile gizlidir, zaten doğrulanmışsa hiç açılmaz -->
+  <div class="main-container" id="main-container-id">
 
     <!-- Gerçek Kamera Deliği Gizleme Görseli (56298.png) -->
     <div class="camera-logo-container">
@@ -292,7 +347,12 @@
     </div>
     
     <div class="recaptcha-wrapper" id="recaptcha-wrapper-id">
-      <div id="recaptcha-container"></div>
+      <div id="recaptcha-container">
+        <!-- ReCAPTCHA yüklenene kadar gösterilen parıldayan iskelet kutusu -->
+        <div class="recaptcha-placeholder" id="shimmer-placeholder">
+          reCAPTCHA yükleniyor...
+        </div>
+      </div>
     </div>
 
     <!-- Gerçek reCAPTCHA Geçilince Açılan Dikey Liste Paneli -->
@@ -326,7 +386,7 @@
   </div>
 
   <script>
-    var firebaseConfig = {
+    const firebaseConfig = {
       apiKey: "AIzaSyC_UbnaLpQv8Lnq65QQL9ARRZEPRZqW2d8",
       authDomain: "h-messenger-1779c.firebaseapp.com",
       projectId: "h-messenger-1779c",
@@ -336,34 +396,18 @@
       measurementId: "G-YKTLBVH5CW"
     };
 
-    firebase.initializeApp(firebaseConfig);
-
-    // GÜVENLİ LOCALSTORAGE TABANLI 24 SAATLİK GEÇİŞ SİSTEMİ
-    function localOturumKontrolEt() {
-      try {
-        const verifiedAt = localStorage.getItem('recaptcha_verified_at');
-        if (verifiedAt) {
-          const diff = Date.now() - parseInt(verifiedAt, 10);
-          const twentyFourHours = 24 * 60 * 60 * 1000; // Milisaniye cinsinden 24 saat
-          
-          if (diff < twentyFourHours) {
-            // Son 24 saat içinde başarıyla doğrulanmışsa doğrudan geçiş ver ve pencereleri gizle
-            document.getElementById("baslik-metni").style.display = "none";
-            document.getElementById("recaptcha-wrapper-id").style.display = "none";
-            document.getElementById("gicik-recaptcha-pencere").style.display = "none";
-            
-            // "RobotDegil" komutunu hem şimdi hem de JS bridge'in yüklenmesini garantiye almak için gecikmeli gönderiyoruz
-            yollaAppInventor("RobotDegil");
-            return true;
-          }
-        }
-      } catch (e) {
-        console.warn("Yerel hafıza erişim izni yok:", e);
-      }
-      return false;
+    // Dinamik script yükleme asistanı
+    function dinamikScriptYukle(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
     }
 
-    // Doğrulama başarıyla tamamlandığında yerel hafızaya kaydet
+    // Doğrulama başarılı olduğunda yerel hafızaya kaydet
     function localOturumKaydet() {
       try {
         localStorage.setItem('recaptcha_verified_at', Date.now());
@@ -372,81 +416,82 @@
       }
     }
 
-    // DOM Hazır Olduğunda Güvenli Başlatıcı
-    document.addEventListener("DOMContentLoaded", function() {
-      const gectiMi = localOturumKontrolEt();
-      if (!gectiMi) {
-        try {
-          // reCAPTCHA v2 Nesnesini sadece 1 kez ve güvenle oluşturuyoruz
-          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-            'size': 'normal',
-            'callback': function(response) {
-              document.getElementById("recaptcha-container").style.display = "none";
-              document.getElementById("baslik-metni").style.display = "none";
-              document.getElementById("gicik-recaptcha-pencere").style.display = "block";
-              listeOlusturVeKaristir();
-            },
-            'expired-callback': function() {
-              if (typeof grecaptcha !== 'undefined') {
-                grecaptcha.reset();
+    // SAYFA HAZIR OLDUĞUNDA TETİKLENEN ANA SİSTEM
+    document.addEventListener("DOMContentLoaded", async function() {
+      // Eğer en başta zaten doğrulandığını bulduysak, arayüzü hiç yükleme ve dur!
+      if (zatenDogrulanmis) return;
+
+      // Doğrulanmadıysa, arayüzü ve iskelet yükleyiciyi anında görünür yap
+      document.getElementById("main-container-id").style.display = "flex";
+
+      try {
+        // Harici ağır kütüphaneleri arka planda asenkron ve çok hızlı indiriyoruz
+        await dinamikScriptYukle("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js");
+        await dinamikScriptYukle("https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js");
+
+        firebase.initializeApp(firebaseConfig);
+
+        // Firebase Auth Redirect kontrolü (varsa)
+        firebase.auth().getRedirectResult()
+          .then(function(result) {
+            if (result.user) {
+              var user = result.user;
+              var phoneNumber = user.phoneNumber;
+              if (phoneNumber) {
+                yollaAppInventor("Telefon:" + phoneNumber);
+              } else {
+                yollaAppInventor("NumaraYok:" + user.displayName);
               }
-            },
-            'error-callback': function(error) {
-              console.log("reCAPTCHA Hatası:", error);
-              document.getElementById("recaptcha-container").style.display = "none";
-              document.getElementById("baslik-metni").style.display = "none";
-              document.getElementById("gicik-recaptcha-pencere").style.display = "block";
-              listeOlusturVeKaristir();
             }
+          }).catch(function(error) {
+            console.log("Redirect Hatası:", error.message);
+            yollaAppInventor("Hata: " + error.message);
           });
 
-          // NESNEYİ EKLEMEK VE RENDER ETMEK İÇİN GÜVENLİ TETİKLEYİCİ
-          window.recaptchaVerifier.render().then(function(widgetId) {
-            window.recaptchaWidgetId = widgetId;
-          });
+        // reCAPTCHA v2 Nesnesini Güvenle Oluşturuyoruz
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+          'size': 'normal',
+          'callback': function(response) {
+            document.getElementById("recaptcha-container").style.display = "none";
+            document.getElementById("baslik-metni").style.display = "none";
+            document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+            listeOlusturVeKaristir();
+          },
+          'expired-callback': function() {
+            if (typeof grecaptcha !== 'undefined') {
+              grecaptcha.reset();
+            }
+          },
+          'error-callback': function(error) {
+            console.log("reCAPTCHA Hatası:", error);
+            kurtarmaModunuTetikle();
+          }
+        });
 
-        } catch(e) {
-          console.error("reCAPTCHA başlatma hatası:", e);
-          // Failsafe / Kurtarma Modu: Google kütüphanesi bozuksa beyaz ekran vermez, doğrudan bizim H-captchalara geçer!
-          document.getElementById("recaptcha-container").style.display = "none";
-          document.getElementById("baslik-metni").style.display = "none";
-          document.getElementById("gicik-recaptcha-pencere").style.display = "block";
-          listeOlusturVeKaristir();
-        }
+        // Ekrana çizim bittiğinde iskelet shimmer görselini kaldırıyoruz
+        window.recaptchaVerifier.render().then(function(widgetId) {
+          window.recaptchaWidgetId = widgetId;
+          const shimmer = document.getElementById("shimmer-placeholder");
+          if (shimmer) shimmer.style.display = "none";
+        });
+
+      } catch(e) {
+        console.error("Kütüphaneler yüklenemedi, kurtarma moduna geçiliyor:", e);
+        kurtarmaModunuTetikle();
       }
     });
 
-    firebase.auth().getRedirectResult()
-      .then(function(result) {
-        if (result.user) {
-          var user = result.user;
-          var phoneNumber = user.phoneNumber;
-          if (phoneNumber) {
-            yollaAppInventor("Telefon:" + phoneNumber);
-          } else {
-            yollaAppInventor("NumaraYok:" + user.displayName);
-          }
-        }
-      }).catch(function(error) {
-        console.log("Redirect Hatası:", error.message);
-        yollaAppInventor("Hata: " + error.message);
-      });
-
-    // Güvenli Köprü İletişimi (JS Bridge'in hazır olmama ihtimaline karşı tekrar gönderme mekanizmalı)
-    function yollaAppInventor(deger) {
-      if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
-        window.AppInventor.setWebViewString(deger);
-      } else {
-        // Gecikmeli yedek tetikleyici (250 milisaniye sonra tekrar dener)
-        setTimeout(function() {
-          if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
-            window.AppInventor.setWebViewString(deger);
-          }
-        }, 250);
-      }
+    // İnternet olmaması veya kütüphane çökmesi durumunda çalışan kurtarma fonksiyonu
+    function kurtarmaModunuTetikle() {
+      const shimmer = document.getElementById("shimmer-placeholder");
+      if (shimmer) shimmer.style.display = "none";
+      document.getElementById("recaptcha-container").style.display = "none";
+      document.getElementById("baslik-metni").style.display = "none";
+      document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+      listeOlusturVeKaristir();
     }
 
-    // BİYOLOJİK VE EVRENSEL İNSAN ÖZELLİKLERİ (Kişisel tercihlerden/kahvelerden arındırılmış)
+    // BİYOLOJİK VE EVRENSEL İNSAN ÖZELLİKLERİ
     const normalSablonlar = [
       "Hayatta kalabilmek için her gün düzenli olarak temiz su içerim.",
       "Vücudumdaki hücrelerin yaşaması için havadan sürekli nefes alırım.",
@@ -617,7 +662,6 @@
       yasakliKutular.forEach(function(kutu) { if (kutu.checked) { yasakliSeciliMi = true; } });
 
       if (hepsiSecili && !yasakliSeciliMi) {
-        // Oturumu yerel tarayıcı hafızasına güvenle kaydedip geçiş veriyoruz
         localOturumKaydet();
         document.getElementById("gicik-recaptcha-pencere").style.display = "none";
         yollaAppInventor("RobotDegil");
@@ -650,4 +694,3 @@
   </script>
 </body>
 </html>
-
