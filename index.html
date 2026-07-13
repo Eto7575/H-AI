@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
-  <!-- Firebase Kütüphaneleri (Sadece Google Giriş/Auth için, Firestore kaldırıldı!) -->
+  <!-- Firebase Kütüphaneleri -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <style>
@@ -45,8 +45,9 @@
       object-fit: contain;
     }
 
+    /* İlk başta görünür tutarak çökme durumlarında beyaz ekran kalmasını önlüyoruz */
     .uyari-metni {
-      display: none; /* İlk başta kontrol yapılana kadar gizli tutulur */
+      display: block;
       width: 100%;
       text-align: center;
       font-size: 13px;
@@ -58,7 +59,7 @@
 
     /* Google reCAPTCHA kutusunu ortalayan sarmalayıcı */
     .recaptcha-wrapper {
-      display: none; /* İlk başta kontrol yapılana kadar gizli tutulur */
+      display: flex;
       justify-content: center;
       width: 100%;
       margin-top: 5px;
@@ -290,7 +291,7 @@
       Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.
     </div>
     
-    <div class="recaptcha-wrapper">
+    <div class="recaptcha-wrapper" id="recaptcha-wrapper-id">
       <div id="recaptcha-container"></div>
     </div>
 
@@ -346,9 +347,9 @@
           const twentyFourHours = 24 * 60 * 60 * 1000; // Milisaniye cinsinden 24 saat
           
           if (diff < twentyFourHours) {
-            // Son 24 saat içinde başarıyla doğrulanmışsa doğrudan geçiş ver
+            // Son 24 saat içinde başarıyla doğrulanmışsa doğrudan geçiş ver ve pencereleri gizle
             document.getElementById("baslik-metni").style.display = "none";
-            document.querySelector(".recaptcha-wrapper").style.display = "none";
+            document.getElementById("recaptcha-wrapper-id").style.display = "none";
             document.getElementById("gicik-recaptcha-pencere").style.display = "none";
             yollaAppInventor("RobotDegil");
             return true;
@@ -358,10 +359,6 @@
         // Cihazın DOM depolama ayarı kapalıysa buraya düşer ve kodun çökmesi engellenir
         console.warn("Yerel hafıza erişim izni yok:", e);
       }
-      
-      // Doğrulama yoksa, süresi dolmuşsa veya yerel hafıza kapalıysa normal ekranı göster
-      document.getElementById("baslik-metni").style.display = "block";
-      document.querySelector(".recaptcha-wrapper").style.display = "flex";
       return false;
     }
 
@@ -374,17 +371,43 @@
       }
     }
 
-    // Sayfa açıldığında doğrudan yerel oturumu kontrol et
-    window.onload = function() {
+    // DOM Hazır Olduğunda Güvenli Başlatıcı
+    document.addEventListener("DOMContentLoaded", function() {
       const gectiMi = localOturumKontrolEt();
       if (!gectiMi) {
         try {
-          window.recaptchaVerifier.render();
+          // reCAPTCHA v2 Nesnesini sadece 1 kez ve güvenle oluşturuyoruz (Çakışma önlendi)
+          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            'size': 'normal',
+            'callback': function(response) {
+              document.getElementById("recaptcha-container").style.display = "none";
+              document.getElementById("baslik-metni").style.display = "none";
+              document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+              listeOlusturVeKaristir();
+            },
+            'expired-callback': function() {
+              if (typeof grecaptcha !== 'undefined') {
+                grecaptcha.reset();
+              }
+            },
+            'error-callback': function(error) {
+              console.log("reCAPTCHA Hatası:", error);
+              document.getElementById("recaptcha-container").style.display = "none";
+              document.getElementById("baslik-metni").style.display = "none";
+              document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+              listeOlusturVeKaristir();
+            }
+          });
         } catch(e) {
-          console.error("Render hatası:", e);
+          console.error("reCAPTCHA başlatma hatası:", e);
+          // Failsafe / Kurtarma Modu: Google kütüphanesi bozuksa beyaz ekran vermez, doğrudan bizim H-captchalara geçer!
+          document.getElementById("recaptcha-container").style.display = "none";
+          document.getElementById("baslik-metni").style.display = "none";
+          document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+          listeOlusturVeKaristir();
         }
       }
-    };
+    });
 
     firebase.auth().getRedirectResult()
       .then(function(result) {
@@ -407,28 +430,6 @@
         window.AppInventor.setWebViewString(deger);
       }
     }
-
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-      'size': 'normal',
-      'callback': function(response) {
-        document.getElementById("recaptcha-container").style.display = "none";
-        document.getElementById("baslik-metni").style.display = "none";
-        document.getElementById("gicik-recaptcha-pencere").style.display = "block";
-        listeOlusturVeKaristir();
-      },
-      'expired-callback': function() {
-        if (typeof grecaptcha !== 'undefined') {
-          grecaptcha.reset();
-        }
-      },
-      'error-callback': function(error) {
-        console.log("reCAPTCHA Hatası:", error);
-        document.getElementById("recaptcha-container").style.display = "none";
-        document.getElementById("baslik-metni").style.display = "none";
-        document.getElementById("gicik-recaptcha-pencere").style.display = "block";
-        listeOlusturVeKaristir();
-      }
-    });
 
     // BİYOLOJİK VE EVRENSEL İNSAN ÖZELLİKLERİ (Kişisel tercihlerden/kahvelerden arındırılmış)
     const normalSablonlar = [
