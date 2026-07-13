@@ -351,12 +351,13 @@
             document.getElementById("baslik-metni").style.display = "none";
             document.getElementById("recaptcha-wrapper-id").style.display = "none";
             document.getElementById("gicik-recaptcha-pencere").style.display = "none";
+            
+            // "RobotDegil" komutunu hem şimdi hem de JS bridge'in yüklenmesini garantiye almak için gecikmeli gönderiyoruz
             yollaAppInventor("RobotDegil");
             return true;
           }
         }
       } catch (e) {
-        // Cihazın DOM depolama ayarı kapalıysa buraya düşer ve kodun çökmesi engellenir
         console.warn("Yerel hafıza erişim izni yok:", e);
       }
       return false;
@@ -376,7 +377,7 @@
       const gectiMi = localOturumKontrolEt();
       if (!gectiMi) {
         try {
-          // reCAPTCHA v2 Nesnesini sadece 1 kez ve güvenle oluşturuyoruz (Çakışma önlendi)
+          // reCAPTCHA v2 Nesnesini sadece 1 kez ve güvenle oluşturuyoruz
           window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
             'size': 'normal',
             'callback': function(response) {
@@ -398,6 +399,12 @@
               listeOlusturVeKaristir();
             }
           });
+
+          // NESNEYİ EKLEMEK VE RENDER ETMEK İÇİN GÜVENLİ TETİKLEYİCİ
+          window.recaptchaVerifier.render().then(function(widgetId) {
+            window.recaptchaWidgetId = widgetId;
+          });
+
         } catch(e) {
           console.error("reCAPTCHA başlatma hatası:", e);
           // Failsafe / Kurtarma Modu: Google kütüphanesi bozuksa beyaz ekran vermez, doğrudan bizim H-captchalara geçer!
@@ -425,9 +432,17 @@
         yollaAppInventor("Hata: " + error.message);
       });
 
+    // Güvenli Köprü İletişimi (JS Bridge'in hazır olmama ihtimaline karşı tekrar gönderme mekanizmalı)
     function yollaAppInventor(deger) {
       if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
         window.AppInventor.setWebViewString(deger);
+      } else {
+        // Gecikmeli yedek tetikleyici (250 milisaniye sonra tekrar dener)
+        setTimeout(function() {
+          if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
+            window.AppInventor.setWebViewString(deger);
+          }
+        }, 250);
       }
     }
 
@@ -635,3 +650,4 @@
   </script>
 </body>
 </html>
+
