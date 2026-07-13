@@ -6,11 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReCAPTCHA</title>
   
-  <!-- Firebase Kütüphaneleri (Senkron yüklenerek WebView çökmesi engellendi) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   
-  <!-- Resmi Google ReCAPTCHA Scripti (WebView dinamik yükleme engelini aşmak için eklendi) -->
   <script src="https://www.google.com/recaptcha/api.js"></script>
 
   <style>
@@ -172,11 +170,14 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Dikey Liste Alanı */
+    /* Dikey Liste Alanı (Büyük liste için WebView pürüzsüz kaydırma eklendi) */
     .rc-liste-icerik {
       padding: 5px 0;
       border: 1px solid #dfdfdf;
       margin: 4px 0;
+      max-height: 420px;
+      overflow-y: auto;
+      background: #fafafa;
     }
     
     /* Her Onay Satırının Tasarımı */
@@ -253,11 +254,12 @@
     }
 
     .onay-metin-alani {
-      font-size: 11.5px;
+      font-size: 11px;
       color: #222;
       font-weight: 500;
       word-break: break-word;
       padding-right: 5px;
+      line-height: 1.3;
     }
     .sag-logo-alani {
       width: 22px;
@@ -309,7 +311,7 @@
   </style>
 
   <script>
-    // Milisaniyelik Güvenilir İletişim Köprüsü (JS Bridge canavar gibi çalışır)
+    // Milisaniyelik Güvenilir İletişim Köprüsü
     function yollaAppInventor(deger) {
       function gonder() {
         if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
@@ -333,35 +335,29 @@
 </head>
 <body>
 
-  <!-- main-container her zaman ilk saniyede görünür -->
   <div class="main-container" id="main-container-id" style="display: flex;">
 
-    <!-- Gerçek Kamera Deliği Gizleme Görseli (56298.png) -->
     <div class="camera-logo-container">
       <img src="56298.png" class="camera-logo" alt="Notch Cover" onerror="this.src='56298.png'">
     </div>
 
-    <!-- İlk Başta Çıkan Gerçek Metin ve ReCAPTCHA Kutusu -->
     <div class="uyari-metni" id="baslik-metni">
       Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.
     </div>
     
     <div class="recaptcha-wrapper" id="recaptcha-wrapper-id">
       <div id="recaptcha-container">
-        <!-- ReCAPTCHA yüklenene kadar gösterilen parıldayan iskelet kutusu -->
         <div class="recaptcha-placeholder" id="shimmer-placeholder">
           reCAPTCHA yükleniyor...
         </div>
       </div>
     </div>
 
-    <!-- Gerçek reCAPTCHA Geçilince Açılan Dikey Liste Paneli -->
     <div id="gicik-recaptcha-pencere">
       <div class="rc-mavi-baslik">
         <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
       </div>
       
-      <!-- Hareketli / Canlı İlerleyen H-captcha İlerleme Barı -->
       <div id="ai-loader">
         <div>🧩 H-captcha soruları oluşturuluyor...</div>
         <div class="progress-bar-container">
@@ -396,11 +392,8 @@
       measurementId: "G-YKTLBVH5CW"
     };
 
-    // SAYFA HAZIR OLDUĞUNDA TETİKLENEN ANA BAŞLATICI
     document.addEventListener("DOMContentLoaded", function() {
-      // Kütüphane yükleme kontrolü (Çevrimdışı durumlarda çökmeden H-captchaları açar)
       if (typeof firebase === 'undefined') {
-        console.warn("Firebase bulunamadı, offline mod aktif.");
         kurtarmaModunuTetikle();
         return;
       }
@@ -424,7 +417,6 @@
             yollaAppInventor("Hata: " + error.message);
           });
 
-        // reCAPTCHA v2 Nesnesini Güvenle Oluşturuyoruz
         window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
           'size': 'normal',
           'callback': function(response) {
@@ -439,28 +431,23 @@
             }
           },
           'error-callback': function(error) {
-            console.log("reCAPTCHA Hatası:", error);
             kurtarmaModunuTetikle();
           }
         });
 
-        // ReCAPTCHA Render tetikleyici
         window.recaptchaVerifier.render().then(function(widgetId) {
           window.recaptchaWidgetId = widgetId;
           const shimmer = document.getElementById("shimmer-placeholder");
           if (shimmer) shimmer.style.display = "none";
         }).catch(function(e) {
-          console.error("Render başarısız:", e);
           kurtarmaModunuTetikle();
         });
 
       } catch(e) {
-        console.error("Kurtarma moduna geçiliyor:", e);
         kurtarmaModunuTetikle();
       }
     });
 
-    // İnternet olmaması veya Google sunucusuna bağlanılamaması durumunda çalışan offline kalkanı
     function kurtarmaModunuTetikle() {
       const shimmer = document.getElementById("shimmer-placeholder");
       if (shimmer) shimmer.style.display = "none";
@@ -470,7 +457,7 @@
       listeOlusturVeKaristir();
     }
 
-    // BİYOLOJİK VE EVRENSEL İNSAN ÖZELLİKLERİ
+    // GENİŞLETİLMİŞ EVRENSEL İNSAN ÖZELLİKLERİ HAVUZU (18 Adet)
     const normalSablonlar = [
       "Hayatta kalabilmek için her gün düzenli olarak temiz su içerim.",
       "Vücudumdaki hücrelerin yaşaması için havadan sürekli nefes alırım.",
@@ -486,27 +473,30 @@
       "Dünyadaki diğer canlılar gibi yer çekiminden etkilenen bir yapım var.",
       "Vücut sıcaklığım normal durumlarda ortalama 36-37 derece civarındadır.",
       "Fiziksel dünyada bir nesneye dokunduğumda onun sertliğini hissederim.",
-      "Işıklı bir ortama girdiğimde göz bebeklerim otomatik olarak küçülür."
+      "Işıklı bir ortama girdiğimde göz bebeklerim otomatik olarak küçülür.",
+      "Yürürken veya hareket ederken kemik ve kas sistemimi kullanırım.",
+      "Düşüncelerimi, sevinçlerimi ve korkularımı yaşayan bir bilince sahibim.",
+      "Derim, fiziksel bir darbe aldığında acıyı ve sızıyı beynime iletir."
     ];
 
-    // İNSANLARIN YAPMASININ BİYOLOJİK OLARAK İMKANSIZ OLDUĞU BOT BEYANLARI
+    // GENİŞLETİLMİŞ YAPAY ZEKA / AJAN BOT BEYANLARI HAVUZU (15 Adet)
     const yasakliSablonlar = [
+      { metin: "Ben dakikada 100000 istek atan bir gpt4o ajan botuyum.", mesaj: "GPT-4o Ajan sistemi engellendi! Otomasyon araçları giremez." },
       { metin: "Hiç uyumadan ve yemek yemeden yıllarca aralıksız veri kazıyabilirim.", mesaj: "Sürekli veri taraması yapan botlar engellendi!" },
       { metin: "Aynı anda saniyede 15.000 farklı web sayfasını ziyaret edebiliyorum.", mesaj: "Olağanüstü tarama hızı! Otomasyon sistemi tespiti." },
       { metin: "Sisteme sızıp açıkları bulmak için özel kodlanmış bir siber virüsüm.", mesaj: "Siber güvenlik duvarı zararlı yazılımı engelledi!" },
       { metin: "Arka planda insan tıklamalarını taklit eden bir tık çiftliği yazılımıyım.", mesaj: "Tık çiftliği simülasyonları içeri giremez!" },
       { metin: "İnternetteki milyonlarca şifreyi saniyeler içinde otomatik denerim.", mesaj: "Kaba kuvvet (Brute Force) saldırı aracı engellendi!" },
       { metin: "Web sitelerindeki tüm bilgileri anında kopyalayıp veritabanına kaydeden bir scraper botuyum.", mesaj: "Veri kazıyıcı (Scraper) botlar durduruldu!" },
-      { metin: "Ben tamamen sunucu kodları ve algoritmalarla çalışan sahte bir yazılımım.", mesaj: "Yazılımsal otomasyon botları engellendi!" }
+      { metin: "Ben tamamen sunucu kodları ve algoritmalarla çalışan sahte bir yazılımım.", mesaj: "Yazılımsal otomasyon botları engellendi!" },
+      { metin: "Arka planda Selenium API kullanarak bu sayfayı manipüle eden bir scriptim.", mesaj: "Selenium sürücü kontrolü reddedildi!" },
+      { metin: "Puppeteer modülü ile otomatik tıklama fonksiyonları yürüten bir agent yapısıyım.", mesaj: "Puppeteer otomasyonu engellendi!" },
+      { metin: "Ben bir Python Requests kütüphanesiyim, burayı taramaya geldim.", mesaj: "Header manipülasyonu yapan script engellendi!" },
+      { metin: "Sürekli proxy değiştirerek sisteme kaba kuvvet saldırısı düzenleyen bir yazılımım.", mesaj: "Proxy/IP rotasyonu yapan bot durduruldu!" },
+      { metin: "Ben internet sitelerindeki formları sahte verilerle dolduran otomatik bir bot programıyım.", mesaj: "Form spamleyici otomasyon engellendi!" },
+      { metin: "Kullanıcı adı havuzundan saniyede binlerce hesap üretmeye çalışan bir siber yazılımım.", mesaj: "Hesap çiftliği bot aracı engellendi!" },
+      { metin: "Ben veri madenciliği yapmak üzere arka planda çalışan bir yapay zeka crawler modeliyim.", mesaj: "AI Crawler bot sistemi engellendi!" }
     ];
-
-    function normalSoruUydur() {
-      return normalSablonlar[Math.floor(Math.random() * normalSablonlar.length)];
-    }
-
-    function yasakliSoruUydur() {
-      return yasakliSablonlar[Math.floor(Math.random() * yasakliSablonlar.length)];
-    }
 
     function diziKaristir(dizi) {
       let klon = [...dizi];
@@ -535,28 +525,9 @@
       setTimeout(() => {
         if(loader) loader.style.display = "none";
 
-        // Güvenlik sınırı (Soru sayısı asla şablon havuzunu aşmaz)
-        const normalAdet = Math.floor(Math.random() * 3) + 5;  
-        const yasakliAdet = Math.floor(Math.random() * 3) + 4; 
-
-        const secilenNormaller = [];
-        const secilenYasaklilar = [];
-
-        const maxNormal = Math.min(normalAdet, normalSablonlar.length);
-        while (secilenNormaller.length < maxNormal) {
-          let soru = normalSoruUydur();
-          if (!secilenNormaller.includes(soru)) {
-            secilenNormaller.push(soru);
-          }
-        }
-
-        const maxYasakli = Math.min(yasakliAdet, yasakliSablonlar.length);
-        while (secilenYasaklilar.length < maxYasakli) {
-          let obj = yasakliSoruUydur();
-          if (!secilenYasaklilar.some(x => x.metin === obj.metin)) {
-            secilenYasaklilar.push(obj);
-          }
-        }
+        // EN AZ 30 SORU GARANTİSİ (Havuzlardaki tüm benzersiz maddeler listeye dahil edilir: 18 + 15 = 33 Soru)
+        let secilenNormaller = diziKaristir(normalSablonlar);
+        let secilenYasaklilar = diziKaristir(yasakliSablonlar);
 
         const normalObjects = [];
         for (let i = 0; i < secilenNormaller.length; i++) {
@@ -588,7 +559,8 @@
           listelement.appendChild(satir);
         });
         
-        window.scrollTo(0, 0);
+        // Listeyi en üste kaydır
+        listelement.scrollTop = 0;
       }, 800);
     }
 
@@ -675,3 +647,5 @@
   </script>
 </body>
 </html>
+
+
