@@ -1,128 +1,808 @@
+
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H-Messenger Captcha Sistemi</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReCAPTCHA</title>
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  
+  <script src="https://www.google.com/recaptcha/api.js"></script>
+
+  <style>
+    /* Kamera kapatıcı görselin tepeye sıfır oturması için üst padding sıfırlandı */
+    body {
+      margin: 0;
+      background-color: #f5f5f5;
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 0 10px 15px 10px;
+      box-sizing: border-box;
+      -webkit-overflow-scrolling: touch;
+    }
     
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    /* Tüm içeriği güvenle ortalayan ana sarmalayıcı */
+    .main-container {
+      display: flex; 
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    /* Üst Kamera Deliğini Gizleyen Havalı Görsel Alanı */
+    .camera-logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .camera-logo {
+      width: 100%;
+      max-width: 360px;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .uyari-metni {
+      width: 100%;
+      text-align: center;
+      font-size: 13px;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+
+    /* Google reCAPTCHA kutusunu ortalayan sarmalayıcı */
+    .recaptcha-wrapper {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 5px;
+      min-height: 78px;
+    }
+
+    /* Modern Shimmer Yükleme İskeleti */
+    .recaptcha-placeholder {
+      width: 304px;
+      height: 78px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #999;
+      position: relative;
+      overflow: hidden;
+    }
+    .recaptcha-placeholder::after {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+      transform: translateX(-100%);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      100% { transform: translateX(100%); }
+    }
+
+    /* Orijinal reCAPTCHA Pencere Tasarımı */
+    #gicik-recaptcha-pencere {
+      display: none;
+      width: 310px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0px 11px 15px -7px rgba(0,0,0,0.2), 0px 24px 38px 3px rgba(0,0,0,0.14);
+      padding: 7px;
+      box-sizing: border-box;
+      margin-bottom: 30px;
+    }
+    .rc-mavi-baslik {
+      background-color: #1a73e8;
+      color: #fff;
+      padding: 14px 14px 20px 14px;
+      font-weight: 400;
+      line-height: 1.3;
+      position: relative;
+    }
+    .rc-baslik-ana {
+      font-size: 13px;
+      font-weight: 500;
+      padding-right: 75px; /* Kronometre rozetinin metinle çakışmasını engeller */
+    }
+
+    /* Canlı Kronometre Rozeti */
+    #timer-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 11px;
+      background: rgba(0, 0, 0, 0.25);
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-family: monospace;
+      letter-spacing: 0.5px;
+    }
     
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        h2 { margin-bottom: 15px; color: #333; font-size: 18px; }
-        .input-group { margin-top: 15px; text-align: left; }
-        .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; text-align: center; }
-        
-        /* Bizim Kelime Sözlüğü Alanı */
-        .sozluk-box { background: #e9ecef; border: 2px dashed #6c757d; padding: 15px; border-radius: 8px; margin: 15px 0; display: none; }
-        .captcha-text { font-size: 19px; font-weight: bold; color: #d9534f; letter-spacing: 1px; margin-bottom: 10px; user-select: none; }
-        
-        .btn-submit { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .error-msg { color: #d9534f; font-size: 13px; margin-top: 5px; font-weight: 600; display: none; text-align: center; }
-    </style>
+    /* Gelişmiş Canlı Hata Paneli */
+    #canli-hata-paneli {
+      display: none;
+      background-color: #fde8e8;
+      color: #c62828;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #f8b4b4;
+      animation: belirmeEfekti 0.2s ease;
+    }
+    
+    /* H-captcha Dinamik İlerleme Barı Paneli */
+    #ai-loader {
+      display: none;
+      background-color: #e8f0fe;
+      color: #1a73e8;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 15px 12px;
+      text-align: center;
+      border-bottom: 1px solid #1a73e8;
+      animation: belirmeEfekti 0.2s ease;
+      box-sizing: border-box;
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background-color: #d0e1fd;
+      border-radius: 3px;
+      margin-top: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #1a73e8;
+      border-radius: 3px;
+      animation: dolumAnimasyonu 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes dolumAnimasyonu {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+
+    @keyframes belirmeEfekti {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Dikey Liste Alanı (Büyük liste için WebView pürüzsüz kaydırma eklendi) */
+    .rc-liste-icerik {
+      padding: 5px 0;
+      border: 1px solid #dfdfdf;
+      margin: 4px 0;
+      max-height: 420px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+    
+    /* Her Onay Satırının Tasarımı */
+    .onay-satiri {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 8px;
+      border-bottom: 1px solid #f0f0f0;
+      background-color: #ffffff;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .onay-satiri:hover {
+      background-color: #fafafa;
+    }
+    .sol-kisin {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Animasyonlu Özel Kutucuk Alanı */
+    .ozel-kutu-alani {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    .onay-satiri input[type="checkbox"] {
+      display: none;
+    }
+    .kutu-gorsel {
+      width: 100%;
+      height: 100%;
+      border: 2px solid #c1c1c1;
+      border-radius: 2px;
+      background: #fff;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 15px;
+      transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .onay-satiri.tikli .kutu-gorsel {
+      background-color: #2e7d32;
+      border-color: #2e7d32;
+      color: white;
+      transform: scale(1.15);
+    }
+    .onay-satiri.tikli .kutu-gorsel::after {
+      content: "✓";
+    }
+
+    .onay-satiri.patladi .kutu-gorsel {
+      background-color: #c62828;
+      border-color: #c62828;
+      color: white;
+      transform: scale(1.4);
+      animation: sarsilSiddetli 0.1s ease alternate 4;
+    }
+    .onay-satiri.patladi .kutu-gorsel::after {
+      content: "✕";
+    }
+
+    @keyframes sarsilSiddetli {
+      0% { transform: translateX(-6px) scale(1.4); }
+      100% { transform: translateX(6px) scale(1.4); }
+    }
+
+    .onay-metin-alani {
+      font-size: 11px;
+      color: #222;
+      font-weight: 500;
+      word-break: break-word;
+      padding-right: 5px;
+      line-height: 1.3;
+    }
+    .sag-logo-alani {
+      width: 22px;
+      height: 22px;
+      background: url('https://www.gstatic.com/recaptcha/api2/logo_48.png') no-repeat center;
+      background-size: contain;
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+
+    .rc-alt-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 5px 5px 5px;
+      border-top: 1px solid #ccc;
+      background: white;
+    }
+    .rc-ikonlar {
+      display: flex;
+      gap: 15px;
+      opacity: 0.5;
+    }
+    .rc-ikon {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    #verify-butonu {
+      background-color: #1a73e8;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 2px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+    #verify-butonu:hover {
+      background-color: #1557b0;
+    }
+
+    /* PREMIUM TEBRİKLER BAŞARI MODALI */
+    #tebrikler-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    }
+    .modal-icerik {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 26px 20px;
+      text-align: center;
+      max-width: 310px;
+      width: 100%;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.35);
+      box-sizing: border-box;
+      animation: modalBelirme 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes modalBelirme {
+      from { transform: scale(0.8) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .modal-ikon {
+      width: 54px;
+      height: 54px;
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 15px auto;
+      box-shadow: 0 4px 10px rgba(46, 125, 50, 0.15);
+    }
+    .modal-baslik {
+      color: #1b5e20;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .modal-sure-metin {
+      font-size: 12px;
+      color: #455a64;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+    .modal-sure-vurgu {
+      font-size: 18px;
+      color: #1e88e5;
+      font-weight: 800;
+      display: block;
+      margin-top: 5px;
+      font-family: monospace;
+    }
+    .modal-buton {
+      background-color: #2e7d32;
+      color: #ffffff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+      transition: background 0.2s;
+    }
+    .modal-buton:hover {
+      background-color: #1b5e20;
+    }
+
+    @media screen and (max-width: 480px) {
+      iframe[title*="recaptcha"], iframe[src*="bframe"] {
+        max-width: 100% !important;
+      }
+    }
+  </style>
+
+  <script>
+    // Milisaniyelik Güvenilir İletişim Köprüsü
+    function yollaAppInventor(deger) {
+      function gonder() {
+        if (typeof window.AppInventor !== 'undefined' && window.AppInventor.setWebViewString) {
+          window.AppInventor.setWebViewString(deger);
+          return true;
+        }
+        return false;
+      }
+
+      if (!gonder()) {
+        let deneme = 0;
+        let tasiyiciInterval = setInterval(function() {
+          deneme++;
+          if (gonder() || deneme > 20) {
+            clearInterval(tasiyiciInterval);
+          }
+        }, 100);
+      }
+    }
+  </script>
 </head>
 <body>
 
-<div class="container">
-    <h2>H-Messenger Güvenlik Doğrulaması</h2>
-    <form id="captchaForm" onsubmit="dogrulamayiBaslat(event)">
-        
-        <div class="g-recaptcha"
-             data-sitekey="SENIN_GOOGLE_SITE_KEYIN"
-             data-callback="googleOnayVerdi"
-             data-size="invisible">
+  <div class="main-container" id="main-container-id" style="display: flex;">
+
+    <div class="camera-logo-container">
+      <img src="56298.png" class="camera-logo" alt="Notch Cover" onerror="this.src='56298.png'">
+    </div>
+
+    <div class="uyari-metni" id="baslik-metni">
+      Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.
+    </div>
+    
+    <div class="recaptcha-wrapper" id="recaptcha-wrapper-id">
+      <div id="recaptcha-container">
+        <div class="recaptcha-placeholder" id="shimmer-placeholder">
+          reCAPTCHA yükleniyor...
         </div>
+      </div>
+    </div>
 
-        <div class="sozluk-box" id="sozlukAlani">
-            <p style="font-size: 13px; color: #666; margin-bottom: 8px;">Lütfen aşağıdaki kelimeleri kutuya aynen yazın:</p>
-            <div class="captcha-text" id="generatedCaptcha"></div>
-            <div class="input-group">
-                <input type="text" id="captchaInput" placeholder="Sıfat + Zamir + Fiil">
-                <div class="error-msg" id="hataMesaji">Kelimeler sözlükle eşleşmedi! Yenisi üretildi.</div>
-            </div>
+    <div id="gicik-recaptcha-pencere">
+      <div class="rc-mavi-baslik">
+        <div class="rc-baslik-ana">Bir yapay zeka sistemi, otomasyona bağlanmış kaba kuvvet saldırı programı ya da bir hacker olmadığınızı doğrulayın.</div>
+        <!-- Canlı Çalışan Kronometre Göstergesi -->
+        <span id="timer-badge">Süre: 0.0s</span>
+      </div>
+      
+      <div id="ai-loader">
+        <div>🧩 H-captcha soruları oluşturuluyor...</div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill"></div>
         </div>
+      </div>
 
-        <button type="submit" class="btn-submit" id="islemButonu">Sistemi Doğrula</button>
-    </form>
-</div>
+      <div id="canli-hata-paneli"></div>
+      
+      <div class="rc-liste-icerik" id="dinamik-liste"></div>
 
-<script>
-    // Ortak Dil Bilgisi Sözlüğümüz
-    const sozluk = {
-        sifatlar: ["Hızlı", "Mavi", "Yorgun", "Gizli", "Zeki", "Büyük", "Sessiz", "Sıcak"],
-        zamirler: ["Ben", "Sen", "O", "Biz", "Siz", "Onlar", "Kendisi", "Herkes"],
-        fiiller: ["Koştu", "Yazdı", "Gördü", "Güldü", "Bildi", "Geldi", "Baktı", "Çözdü"]
+      <div class="rc-alt-bar">
+        <div class="rc-ikonlar">
+          <span class="rc-ikon">🔄</span>
+          <span class="rc-ikon">🎧</span>
+          <span class="rc-ikon">ℹ️</span>
+        </div>
+        <button id="verify-butonu" onclick="listeyiKontrolEt()">Verify</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BAŞARI TEBRİK MODALI -->
+  <div id="tebrikler-modal">
+    <div class="modal-icerik">
+      <div class="modal-ikon">✓</div>
+      <div class="modal-baslik">TEBRİKLER!</div>
+      <div class="modal-sure-metin">
+        ROBOT OLMADIĞINIZI BAŞARIYLA DOĞRULADINIZ!
+        <span class="modal-sure-vurgu" id="final-sure">0.00 saniye</span>
+      </div>
+      <button class="modal-buton" onclick="modalKapatVeGonder()">Uygulamaya Dön</button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_UbnaLpQv8Lnq65QQL9ARRZEPRZqW2d8",
+      authDomain: "h-messenger-1779c.firebaseapp.com",
+      projectId: "h-messenger-1779c",
+      storageBucket: "h-messenger-1779c.firebasestorage.app",
+      messagingSenderId: "769297013571",
+      appId: "1:769297013571:web:3106ad119ae72e377b2df6",
+      measurementId: "G-YKTLBVH5CW"
     };
 
-    let uretilenCaptcha = "";
-    let gOnay = false;
-    let gToken = "";
+    // Kronometre Global Değişkenleri
+    let startTime = null;
+    let timerInterval = null;
+    let timerStarted = false;
 
-    // Rastgele kombinasyon üreteç
-    function kelimeUret() {
-        const s = sozluk.sifatlar[Math.floor(Math.random() * sozluk.sifatlar.length)];
-        const z = sozluk.zamirler[Math.floor(Math.random() * sozluk.zamirler.length)];
-        const f = sozluk.fiiller[Math.floor(Math.random() * sozluk.fiiller.length)];
-        return `${s} ${z} ${f}`;
+    // Kronometreyi Tamamen Sıfırlama Fonksiyonu
+    function resetTimer() {
+      clearInterval(timerInterval);
+      startTime = null;
+      timerStarted = false;
+      const badge = document.getElementById("timer-badge");
+      if (badge) badge.innerText = "Süre: 0.0s";
     }
 
-    // Butona basıldığında tetiklenen fonksiyon
-    function dogrulamayiBaslat(event) {
-        event.preventDefault();
+    // Canlı Süre Güncelleyici (Her 100ms'de bir tetiklenir)
+    function updateLiveTimer() {
+      if (!startTime) return;
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      const badge = document.getElementById("timer-badge");
+      if (badge) badge.innerText = "Süre: " + elapsed + "s";
+    }
 
-        // Eğer Google henüz onay vermediyse önce görünmez reCAPTCHA çalışsın
-        if (!gOnay) {
-            grecaptcha.execute();
-            return;
-        }
+    // Tebrik Modalı Kapatıcı ve MIT App Inventor Köprüsü
+    function modalKapatVeGonder() {
+      document.getElementById("tebrikler-modal").style.display = "none";
+      yollaAppInventor("RobotDegil");
+    }
 
-        // Google onaylıysa bizim sözlük kontrolünü yap
-        const hata = document.getElementById("hataMesaji");
-        const girenVeri = document.getElementById("captchaInput").value.trim();
+    document.addEventListener("DOMContentLoaded", function() {
+      if (typeof firebase === 'undefined') {
+        kurtarmaModunuTetikle();
+        return;
+      }
 
-        if (girenVeri.toLowerCase() === uretilenCaptcha.toLowerCase()) {
-            hata.style.display = "none";
-            
-            // Başarılı sonucu paketle
-            const sonuc = {
-                durum: "BASARILI",
-                token: gToken,
-                kelimeler: uretilenCaptcha
-            };
+      try {
+        firebase.initializeApp(firebaseConfig);
 
-            // Uygulamaya (WebViewString veya köprüye) gönder
-            if (window.AppInventor) {
-                window.AppInventor.setWebViewString(JSON.stringify(sonuc));
-            } else if (window.AndroidInterface) {
-                window.AndroidInterface.postMessage(JSON.stringify(sonuc));
-            } else {
-                alert("Doğrulama Tamamlandı!\n" + JSON.stringify(sonuc));
+        firebase.auth().getRedirectResult()
+          .then(function(result) {
+            if (result.user) {
+              var user = result.user;
+              var phoneNumber = user.phoneNumber;
+              if (phoneNumber) {
+                yollaAppInventor("Telefon:" + phoneNumber);
+              } else {
+                yollaAppInventor("NumaraYok:" + user.displayName);
+              }
             }
-        } else {
-            hata.style.display = "block";
-            document.getElementById("captchaInput").value = "";
-            uretilenCaptcha = kelimeUret();
-            document.getElementById("generatedCaptcha").innerText = uretilenCaptcha;
+          }).catch(function(error) {
+            console.log("Redirect Hatası:", error.message);
+            yollaAppInventor("Hata: " + error.message);
+          });
+
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+          'size': 'normal',
+          'callback': function(response) {
+            document.getElementById("recaptcha-container").style.display = "none";
+            document.getElementById("baslik-metni").style.display = "none";
+            document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+            listeOlusturVeKaristir();
+          },
+          'expired-callback': function() {
+            if (typeof grecaptcha !== 'undefined') {
+              grecaptcha.reset();
+            }
+          },
+          'error-callback': function(error) {
+            kurtarmaModunuTetikle();
+          }
+        });
+
+        window.recaptchaVerifier.render().then(function(widgetId) {
+          window.recaptchaWidgetId = widgetId;
+          const shimmer = document.getElementById("shimmer-placeholder");
+          if (shimmer) shimmer.style.display = "none";
+        }).catch(function(e) {
+          kurtarmaModunuTetikle();
+        });
+
+      } catch(e) {
+        kurtarmaModunuTetikle();
+      }
+    });
+
+    function kurtarmaModunuTetikle() {
+      const shimmer = document.getElementById("shimmer-placeholder");
+      if (shimmer) shimmer.style.display = "none";
+      document.getElementById("recaptcha-container").style.display = "none";
+      document.getElementById("baslik-metni").style.display = "none";
+      document.getElementById("gicik-recaptcha-pencere").style.display = "block";
+      listeOlusturVeKaristir();
+    }
+
+    // GENİŞLETİLMİŞ EVRENSEL İNSAN ÖZELLİKLERİ HAVUZU (18 Adet)
+    const normalSablonlar = [
+      "Hayatta kalabilmek için her gün düzenli olarak temiz su içerim.",
+      "Vücudumdaki hücrelerin yaşaması için havadan sürekli nefes alırım.",
+      "Gözlerimin kurumaması için gün içinde istemsizce göz kırparım.",
+      "Uykum geldiğinde uyuyup dinlenen biyolojik bir canlıyım.",
+      "Sıcaklık çok yükseldiğinde vücut ısımı dengede tutmak için terlerim.",
+      "Acıktığım zaman enerji toplamak için besin tüketirim.",
+      "Kalbimin göğsümde her saniye kan pompaladığını hissedebiliyorum.",
+      "Hava çok soğuduğunda ısınabilmek için istemsizce titrerim.",
+      "Hapşırırken gözlerimi kontrol dışı kapatan biriyim.",
+      "Zaman ilerledikçe büyüyen ve yaşlanan fani bir insanım.",
+      "Üzüldüğümde ya da çok mutlu olduğumda gözyaşı dökebilirim.",
+      "Dünyadaki diğer canlılar gibi yer çekiminden etkilenen bir yapım var.",
+      "Vücut sıcaklığım normal durumlarda ortalama 36-37 derece civarındadır.",
+      "Fiziksel dünyada bir nesneye dokunduğumda onun sertliğini hissederim.",
+      "Işıklı bir ortama girdiğimde göz bebeklerim otomatik olarak küçülür.",
+      "Yürürken veya hareket ederken kemik ve kas sistemimi kullanırım.",
+      "Düşüncelerimi, sevinçlerimi ve korkularımı yaşayan bir bilince sahibim.",
+      "Derim, fiziksel bir darbe aldığında acıyı ve sızıyı beynime iletir."
+    ];
+
+    // GENİŞLETİLMİŞ YAPAY ZEKA / AJAN BOT BEYANLARI HAVUZU (15 Adet)
+    const yasakliSablonlar = [
+      { metin: "Ben dakikada 100000 istek atan bir gpt4o ajan botuyum.", mesaj: "GPT-4o Ajan sistemi engellendi! Otomasyon araçları giremez." },
+      { metin: "Hiç uyumadan ve yemek yemeden yıllarca aralıksız veri kazıyabilirim.", mesaj: "Sürekli veri taraması yapan botlar engellendi!" },
+      { metin: "Aynı anda saniyede 15.000 farklı web sayfasını ziyaret edebiliyorum.", mesaj: "Olağanüstü tarama hızı! Otomasyon sistemi tespiti." },
+      { metin: "Sisteme sızıp açıkları bulmak için özel kodlanmış bir siber virüsüm.", mesaj: "Siber güvenlik duvarı zararlı yazılımı engelledi!" },
+      { metin: "Arka planda insan tıklamalarını taklit eden bir tık çiftliği yazılımıyım.", mesaj: "Tık çiftliği simülasyonları içeri giremez!" },
+      { metin: "İnternetteki milyonlarca şifreyi saniyeler içinde otomatik denerim.", mesaj: "Kaba kuvvet (Brute Force) saldırı aracı engellendi!" },
+      { metin: "Web sitelerindeki tüm bilgileri anında kopyalayıp veritabanına kaydeden bir scraper botuyum.", mesaj: "Veri kazıyıcı (Scraper) botlar durduruldu!" },
+      { metin: "Ben tamamen sunucu kodları ve algoritmalarla çalışan sahte bir yazılımım.", mesaj: "Yazılımsal otomasyon botları engellendi!" },
+      { metin: "Arka planda Selenium API kullanarak bu sayfayı manipüle eden bir scriptim.", mesaj: "Selenium sürücü kontrolü reddedildi!" },
+      { metin: "Puppeteer modülü ile otomatik tıklama fonksiyonları yürüten bir agent yapısıyım.", mesaj: "Puppeteer otomasyonu engellendi!" },
+      { metin: "Ben bir Python Requests kütüphanesiyim, burayı taramaya geldim.", mesaj: "Header manipülasyonu yapan script engellendi!" },
+      { metin: "Sürekli proxy değiştirerek sisteme kaba kuvvet saldırısı düzenleyen bir yazılımım.", mesaj: "Proxy/IP rotasyonu yapan bot durduruldu!" },
+      { metin: "Ben internet sitelerindeki formları sahte verilerle dolduran otomatik bir bot programıyım.", mesaj: "Form spamleyici otomasyon engellendi!" },
+      { metin: "Kullanıcı adı havuzundan saniyede binlerce hesap üretmeye çalışan bir siber yazılımım.", mesaj: "Hesap çiftliği bot aracı engellendi!" },
+      { metin: "Ben veri madenciliği yapmak üzere arka planda çalışan bir yapay zeka crawler modeliyim.", mesaj: "AI Crawler bot sistemi engellendi!" }
+    ];
+
+    function diziKaristir(dizi) {
+      let klon = [...dizi];
+      for (let i = klon.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [klon[i], klon[j]] = [klon[j], klon[i]];
+      }
+      return klon;
+    }
+
+    function listeOlusturVeKaristir() {
+      let listelement = document.getElementById("dinamik-liste");
+      let loader = document.getElementById("ai-loader");
+      if(!listelement) return;
+      listelement.innerHTML = "";
+      
+      // Liste sıfırlandığı her an kronometreyi de güvenle sıfırlıyoruz
+      resetTimer();
+
+      if(loader) {
+        loader.style.display = "block";
+        let barFill = loader.querySelector(".progress-bar-fill");
+        if(barFill) {
+          barFill.style.width = "0%";
+          setTimeout(() => { barFill.style.width = "100%"; }, 10);
         }
-    }
+      }
 
-    // Google reCAPTCHA v2 Invisible arka planda onay verince burası çalışır
-    function googleOnayVerdi(token) {
-        gOnay = true;
-        gToken = token;
+      setTimeout(() => {
+        if(loader) loader.style.display = "none";
 
-        // Bizim Sıfat+Zamir+Fiil kutusunu açıyoruz
-        uretilenCaptcha = kelimeUret();
-        document.getElementById("generatedCaptcha").innerText = uretilenCaptcha;
-        document.getElementById("sozlukAlani").style.display = "block";
+        let karisikNormaller = diziKaristir(normalSablonlar);
+        let karisikYasaklilar = diziKaristir(yasakliSablonlar);
+
+        // TAM 15 SORU SINIRI (8 normal, 7 yasaklı soru seçilir)
+        let secilenNormaller = karisikNormaller.slice(0, 8);
+        let secilenYasaklilar = karisikYasaklilar.slice(0, 7);
+
+        const normalObjects = [];
+        for (let i = 0; i < secilenNormaller.length; i++) {
+          normalObjects.push({ metin: secilenNormaller[i] });
+        }
         
-        const buton = document.getElementById("islemButonu");
-        buton.innerText = "Kelimeleri Onayla";
-        buton.style.backgroundColor = "#28a745";
-    }
-</script>
+        const yasakliObjects = secilenYasaklilar;
+        
+        let karisikListe = diziKaristir(normalObjects.concat(yasakliObjects));
 
+        karisikListe.forEach(item => {
+          let satir = document.createElement("div");
+          satir.className = "onay-satiri";
+          satir.setAttribute("data-tip", item.mesaj ? 'yasakli' : 'normal');
+          
+          satir.innerHTML = `
+            <div class="sol-kisin">
+              <div class="ozel-kutu-alani">
+                <div class="kutu-gorsel"></div>
+                <input type="checkbox" class="${item.mesaj ? 'yasakli' : 'gogogicik'}">
+              </div>
+              <span class="onay-metin-alani">${item.metin}</span>
+            </div>
+            <div class="sag-logo-alani"></div>
+          `;
+          
+          satir.onclick = function() { 
+            kutuTikla(satir, item.mesaj ? 'yasakli' : 'normal', item.mesaj || 'Yapay zeka kokusu alıyorum! Sisteme sızma girişimi engellendi. Baştan başlayın.'); 
+          };
+          listelement.appendChild(satir);
+        });
+        
+        listelement.scrollTop = 0;
+      }, 800);
+    }
+
+    function canliHataGoster(mesaj) {
+      let panel = document.getElementById("canli-hata-paneli");
+      if(!panel) return;
+      panel.innerText = "⚠️ " + mesaj;
+      panel.style.display = "block";
+      
+      if(navigator.vibrate) navigator.vibrate(200);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      setTimeout(() => { panel.style.display = "none"; }, 4500);
+    }
+
+    // %5 HATA OLASILIĞI AYARI BURADA ÇALIŞIR
+    function kutuTikla(element, tip, mesaj) {
+      // Akıllı Kronometre Tetikleyicisi (İlk dokunuş yapıldığı saniye zaman sayacı başlar)
+      if (!timerStarted) {
+        timerStarted = true;
+        startTime = Date.now();
+        timerInterval = setInterval(updateLiveTimer, 100);
+      }
+
+      var cb = element.querySelector('input[type="checkbox"]');
+      if (element.classList.contains('tikli') || element.classList.contains('patladi')) return;
+
+      if (tip === 'yasakli') {
+        element.classList.add('patladi');
+        cb.checked = true;
+        setTimeout(function() {
+          canliHataGoster(mesaj);
+          listeOlusturVeKaristir();
+        }, 350);
+        return;
+      }
+
+      if (tip === 'normal') {
+        if (Math.random() < 0.05) {
+          element.classList.add('patladi');
+          cb.checked = true;
+          setTimeout(function() {
+            canliHataGoster("Yapay zeka kokusu alıyorum! bot saldırı araçları giriş yapamazlar.");
+            listeOlusturVeKaristir();
+          }, 350);
+          return;
+        }
+      }
+
+      element.classList.add('tikli');
+      cb.checked = true;
+    }
+
+    function listeyiKontrolEt() {
+      var kutular = document.querySelectorAll('.gogogicik');
+      var yasakliKutular = document.querySelectorAll('.yasakli');
+      var hepsiSecili = true;
+      var yasakliSeciliMi = false;
+      
+      kutular.forEach(function(kutu) { if (!kutu.checked) { hepsiSecili = false; } });
+      yasakliKutular.forEach(function(kutu) { if (kutu.checked) { yasakliSeciliMi = true; } });
+
+      if (hepsiSecili && !yasakliSeciliMi) {
+        // Kronometreyi durdurup final süresini milisaniye doğruluğuyla hesaplıyoruz
+        clearInterval(timerInterval);
+        const finalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+        
+        // Başarı modalını güncelleyip görünür kılıyoruz
+        document.getElementById("final-sure").innerText = finalTime + " saniye";
+        document.getElementById("tebrikler-modal").style.display = "flex";
+        
+      } else {
+        canliHataGoster("Doğrulama başarısız! bot saldırı araçları giriş yapamazlar. Tüm doğru kutucukları işaretleyin.");
+        listeOlusturVeKaristir();
+      }
+    }
+
+    function startGoogleSignIn() {
+      yollaAppInventor("TriggerGoogleSignIn");
+
+      var provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('profile');
+      
+      firebase.auth().signInWithPopup(provider)
+        .then(function(result) {
+          var user = result.user;
+          var phoneNumber = user.phoneNumber;
+          if (phoneNumber) {
+            yollaAppInventor("Telefon:" + phoneNumber);
+          } else {
+            yollaAppInventor("NumaraYok:" + user.displayName);
+          }
+        }).catch(function(error) {
+          console.log("Popup engellendi, Redirect yöntemi deneniyor...", error.message);
+          firebase.auth().signInWithRedirect(provider);
+        });
+    }
+  </script>
 </body>
 </html>
