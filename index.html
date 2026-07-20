@@ -4,13 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H-AI - Kişisel Uyandırma ve Ses Modeli Eğitim Paneli</title>
+    <title>H-AI - Kişisel Ses Asistanı Eğitim Portalı</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Tam siyah ve minimal kaydırma çubuğu tasarımları */
         body {
             background-color: #000000;
         }
@@ -32,135 +31,180 @@
 <body class="text-white min-h-screen flex flex-col justify-between font-sans selection:bg-white selection:text-black">
 
     <!-- Header -->
-    <header class="border-b border-zinc-900 bg-black/80 backdrop-blur sticky top-0 z-50 px-4 py-4">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
+    <header class="border-b border-zinc-900 bg-black/85 backdrop-blur sticky top-0 z-50 px-4 py-4">
+        <div class="max-w-xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-lg shadow-white/5">
-                    <i class="fa-solid fa-brain text-black text-xl"></i>
+                <div class="w-9 h-9 rounded-md bg-white flex items-center justify-center shadow-lg shadow-white/5">
+                    <span class="text-black font-black text-sm tracking-tighter">H.</span>
                 </div>
                 <div>
-                    <h1 class="font-bold text-xl tracking-wider leading-none">H-AI</h1>
-                    <p class="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Kişisel Yapay Zeka Ses Laboratuvarı</p>
+                    <h1 class="font-bold text-lg tracking-wider leading-none">H-AI</h1>
+                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest mt-1">SES LABORATUVARI</p>
                 </div>
             </div>
-            <span class="text-xs bg-zinc-900 text-zinc-300 px-3 py-1 rounded-md font-mono border border-zinc-800">
-                AŞAMA 1: SES TOPLAMA
-            </span>
+            <div id="header-badge" class="text-[10px] bg-zinc-900 text-zinc-300 px-2.5 py-1 rounded font-mono border border-zinc-800 uppercase tracking-wider">
+                GİRİŞ SAYFASI
+            </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl w-full mx-auto p-4 flex-1 flex flex-col gap-6">
+    <!-- Main Content Containers -->
+    <main class="max-w-xl w-full mx-auto p-4 flex-1 flex flex-col justify-center">
         
-        <!-- Info Alert -->
-        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 flex gap-3 items-start">
-            <i class="fa-solid fa-wand-magic-sparkles text-zinc-400 mt-1"></i>
-            <div class="text-sm text-zinc-400 leading-relaxed">
-                <strong class="text-white block mb-1">Kendi Ses Asistanınızı Tasarlayın</strong>
-                H-AI'ın sizi tanıyabilmesi için önce bir <span class="text-white underline decoration-zinc-600 font-semibold">Uyandırma Kelimesi</span> kaydetmelisiniz. Ardından asistanınızın yapmasını istediğiniz diğer özel komutları (kelimeleri) ekleyerek kendi ses modelinizi eğitebilirsiniz.
+        <!-- SAYFA 1: UYANDIRMA SÖZCÜĞÜ BELİRLEME -->
+        <section id="page-1" class="flex flex-col gap-6 py-8">
+            <div class="text-center space-y-2">
+                <div class="inline-flex w-12 h-12 rounded-full border border-zinc-800 items-center justify-center mb-2">
+                    <i class="fa-solid fa-microphone-lines text-zinc-400 text-lg"></i>
+                </div>
+                <h2 class="text-xl font-bold tracking-tight">H-AI'a nasıl seslenmek istersiniz?</h2>
+                <p class="text-xs text-zinc-500 max-w-sm mx-auto">Asistanınızı uykusundan uyandıracak size özel sihirli kelimeyi veya cümleyi belirleyin.</p>
             </div>
-        </div>
 
-        <!-- Class Management Section -->
-        <section class="bg-zinc-950 border border-zinc-900 rounded-xl p-5">
-            <h2 class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-command text-white"></i>
-                H-AI Ses Komut Havuzu
-            </h2>
-            
-            <div class="flex flex-col sm:flex-row gap-3 mb-6">
-                <input id="class-input" type="text" placeholder="Örn: Lambayı Aç, Televizyonu Kapat, Müzik Çal" 
-                       class="bg-black border border-zinc-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white flex-1 placeholder:text-zinc-600 text-white transition-colors">
-                <button id="add-class-btn" class="bg-white hover:bg-zinc-200 active:scale-95 text-black font-semibold text-sm px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Komut Ekle
+            <div class="space-y-4">
+                <div class="relative">
+                    <input id="wake-word-input" type="text" placeholder="Örn: Hey Susam" 
+                           class="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-4 py-4 text-center text-lg font-semibold focus:outline-none focus:border-white placeholder:text-zinc-700 transition-colors uppercase tracking-wider text-white">
+                </div>
+                
+                <button id="start-btn" class="w-full bg-white hover:bg-zinc-200 active:scale-[0.98] text-black font-bold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2">
+                    Devam Et <i class="fa-solid fa-arrow-right text-xs"></i>
                 </button>
             </div>
 
-            <!-- List of classes -->
-            <div id="classes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Dinamik sınıflar buraya eklenecek -->
+            <div class="border-t border-zinc-950 pt-4 text-center">
+                <p class="text-[10px] text-zinc-650 uppercase tracking-wider">Tavsiye edilenler: "Hey Susam", "Hey H-AI", "Yapay Zeka"</p>
             </div>
         </section>
 
-        <!-- Recording Section -->
-        <section id="recording-panel" class="hidden bg-zinc-950 border border-zinc-900 rounded-xl p-5 transition-all duration-300">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-sm font-semibold text-white flex items-center gap-2">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                    </span>
-                    "<span id="active-class-title" class="text-zinc-300">Sınıf Adı</span>" Eğitimi Aktif
-                </h2>
-                <button id="close-recorder-btn" class="text-zinc-500 hover:text-white text-xs flex items-center gap-1 bg-black px-3 py-1.5 rounded border border-zinc-850 transition-colors">
-                    <i class="fa-solid fa-xmark"></i> Kapat
-                </button>
+        <!-- SAYFA 2: MODELİ EĞİT (SES TOPlAMA & PANEL) -->
+        <section id="page-2" class="hidden flex flex-col gap-6 py-4">
+            
+            <!-- Bilgilendirme -->
+            <div class="bg-zinc-950 border border-zinc-900 rounded-lg p-4 flex gap-3 items-start">
+                <i class="fa-solid fa-circle-nodes text-zinc-500 mt-0.5"></i>
+                <div class="text-xs text-zinc-400 leading-relaxed">
+                    <span class="text-white font-semibold">Nasıl Çalışır?</span> Belirlediğiniz ses grupları için en az 3'er adet ses kaydı gönderin. Alttaki kontrol listesindeki tüm adımlar tamamlandığında modelinizi eğitebilirsiniz.
+                </div>
             </div>
 
-            <div class="bg-black rounded-lg p-6 border border-zinc-900 flex flex-col items-center justify-center gap-4 text-center">
-                <!-- Wave Animation (Modern white blocks) -->
-                <div id="wave-container" class="flex items-center gap-1 h-10 justify-center opacity-30 transition-all">
-                    <span class="w-[3px] bg-white rounded-full h-2 transition-all duration-150"></span>
-                    <span class="w-[3px] bg-white rounded-full h-5 transition-all duration-150"></span>
-                    <span class="w-[3px] bg-white rounded-full h-8 transition-all duration-150"></span>
-                    <span class="w-[3px] bg-white rounded-full h-4 transition-all duration-150"></span>
-                    <span class="w-[3px] bg-white rounded-full h-7 transition-all duration-150"></span>
-                    <span class="w-[3px] bg-white rounded-full h-3 transition-all duration-150"></span>
+            <!-- Ses Sınıfları Listesi -->
+            <div class="space-y-3">
+                <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Eğitilecek Ses Sınıfları</h3>
+                <div id="classes-container" class="space-y-2.5">
+                    <!-- Dinamik olarak doldurulacak -->
+                </div>
+            </div>
+
+            <!-- Ses Kayıt Paneli -->
+            <div id="recording-panel" class="hidden bg-zinc-950 border border-zinc-900 rounded-lg p-4 transition-all duration-300">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="text-xs font-semibold text-white flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                        "<span id="active-class-title" class="text-zinc-300">Sınıf</span>" Kayıt Odası
+                    </h4>
+                    <button id="close-recorder-btn" class="text-zinc-500 hover:text-white text-[10px] flex items-center gap-1 bg-black px-2.5 py-1 rounded border border-zinc-850 transition-colors">
+                        Kapat
+                    </button>
                 </div>
 
-                <p id="recorder-status" class="text-xs text-zinc-500">Kayda başlamak için mikrofon simgesine dokunun.</p>
+                <div class="bg-black rounded border border-zinc-900 p-4 flex flex-col items-center justify-center gap-3 text-center">
+                    <!-- Dalga efekti -->
+                    <div id="wave-container" class="flex items-center gap-1 h-8 justify-center opacity-30 transition-all">
+                        <span class="w-[2px] bg-white rounded-full h-2 transition-all duration-150"></span>
+                        <span class="w-[2px] bg-white rounded-full h-5 transition-all duration-150"></span>
+                        <span class="w-[2px] bg-white rounded-full h-7 transition-all duration-150"></span>
+                        <span class="w-[2px] bg-white rounded-full h-3 transition-all duration-150"></span>
+                        <span class="w-[2px] bg-white rounded-full h-6 transition-all duration-150"></span>
+                        <span class="w-[2px] bg-white rounded-full h-2 transition-all duration-150"></span>
+                    </div>
 
-                <!-- Recording Controls -->
-                <div class="flex items-center justify-center gap-4">
-                    <button id="record-btn" class="w-14 h-14 rounded-full bg-white hover:bg-zinc-200 active:scale-90 transition-all flex items-center justify-center text-black text-xl shadow-lg shadow-white/5">
+                    <p id="recorder-status" class="text-[11px] text-zinc-500">Mikrofona dokunarak 1.5 saniye boyunca kelimeyi söyleyin.</p>
+
+                    <button id="record-btn" class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 active:scale-90 transition-all flex items-center justify-center text-black text-lg shadow-lg">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
                 </div>
-                <p class="text-[10px] text-zinc-650">Kayıt esnasında kelimeyi tek seferde net bir şekilde telaffuz edin (1-2 sn).</p>
+
+                <!-- Kayıtlar listesi -->
+                <div class="mt-3">
+                    <div id="samples-list" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
+                        <!-- Kayıtlar buraya sıralanacak -->
+                    </div>
+                </div>
             </div>
 
-            <!-- List of recorded samples in this class -->
-            <div class="mt-4">
-                <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Mevcut Ses Dosyalarınız</h3>
-                <div id="samples-list" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
-                    <!-- Örnekler dinamik eklenecek -->
+            <!-- Gereksinim Kontrol Listesi -->
+            <div class="bg-zinc-950 border border-zinc-900 rounded-lg p-4 space-y-2">
+                <h4 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Eğitim Koşulları</h4>
+                <div class="space-y-1.5 text-xs">
+                    <div id="check-wake-word" class="flex items-center gap-2 text-zinc-500">
+                        <i class="fa-regular fa-circle" id="check-wake-icon"></i>
+                        <span id="check-wake-text">Uyandırma Kelimesi Kaydı (0/3)</span>
+                    </div>
+                    <div id="check-bg-noise" class="flex items-center gap-2 text-zinc-500">
+                        <i class="fa-regular fa-circle" id="check-noise-icon"></i>
+                        <span id="check-noise-text">Arkaplan Gürültüsü Kaydı (0/3)</span>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Eğit Butonu -->
+            <div class="pt-2">
+                <button id="train-btn" disabled class="w-full bg-zinc-900 text-zinc-650 cursor-not-allowed font-semibold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2 border border-zinc-850">
+                    <i class="fa-solid fa-circle-notch animate-spin hidden" id="train-spinner"></i>
+                    <i class="fa-solid fa-bolt" id="train-icon"></i>
+                    Modeli Eğit ve Paketle
+                </button>
             </div>
         </section>
 
-        <!-- Finalize Block -->
-        <section class="mt-auto pt-6 border-t border-zinc-900 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div>
-                <h3 class="font-semibold text-white text-sm">H-AI Beynini Oluştur</h3>
-                <p class="text-xs text-zinc-500">Yeterli ses örneklerini topladıktan sonra model eğiticisini başlatın.</p>
+        <!-- SAYFA 3: BAŞARI EKRANI (MİNİMALİST & SADECE BİR GÖRSEL) -->
+        <section id="page-3" class="hidden flex flex-col items-center justify-center gap-8 py-16 text-center animate-fade-in">
+            <!-- Modern Soyut Yapay Zeka Ses Dalgası / Orb Görseli -->
+            <div class="relative w-48 h-48 flex items-center justify-center">
+                <!-- Glowing Outer Rings -->
+                <div class="absolute inset-0 rounded-full border border-white/5 animate-ping opacity-20 duration-1000"></div>
+                <div class="absolute inset-4 rounded-full border border-white/10 animate-pulse duration-700"></div>
+                <div class="absolute inset-8 rounded-full border border-zinc-850 bg-black flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.05)]">
+                    <!-- Center Pulse Ring -->
+                    <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center animate-pulse">
+                        <i class="fa-solid fa-microphone-lines text-white text-2xl"></i>
+                    </div>
+                </div>
             </div>
-            <button id="train-btn" disabled class="w-full sm:w-auto bg-zinc-900 text-zinc-600 cursor-not-allowed font-semibold text-sm px-8 py-3.5 rounded-lg transition-all flex items-center justify-center gap-2 border border-zinc-800">
-                <i class="fa-solid fa-spinner animate-spin hidden" id="train-spinner"></i>
-                <i class="fa-solid fa-bolt" id="train-icon"></i>
-                Bulutta H-AI'ı Eğit
-            </button>
+
+            <!-- Sadece Başarı Yazısı -->
+            <div class="space-y-3 px-4">
+                <h2 class="text-lg font-black tracking-widest uppercase text-zinc-500">İŞLEM BAŞARILI</h2>
+                <p class="text-xl font-medium text-white max-w-sm mx-auto leading-relaxed">
+                    Tebrikler. Artık asistanınız sizinle daha iyi konuşabilecek.
+                </p>
+            </div>
         </section>
 
     </main>
 
-    <!-- Custom Alert Message Box -->
-    <div id="message-box" class="fixed bottom-4 right-4 max-w-sm w-full bg-zinc-950 border border-zinc-800 rounded-lg p-4 shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex gap-3 items-center">
-        <div id="message-icon-box" class="w-8 h-8 rounded flex items-center justify-center text-black bg-white"></div>
-        <p id="message-text" class="text-xs text-zinc-300 font-medium"></p>
+    <!-- Mesaj Paneli (Custom Toast) -->
+    <div id="toast-message" class="fixed bottom-4 right-4 max-w-xs w-full bg-zinc-950 border border-zinc-800 rounded p-3.5 shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex gap-2.5 items-center">
+        <div id="toast-icon" class="w-7 h-7 rounded flex items-center justify-center bg-white text-black text-xs"></div>
+        <p id="toast-text" class="text-[11px] text-zinc-300 font-medium"></p>
     </div>
 
     <!-- Footer -->
-    <footer class="py-6 border-t border-zinc-950 bg-black text-center text-[10px] text-zinc-600 uppercase tracking-wider">
-        <p>© 2026 H-AI Engine. Tüm Hakları Saklıdır.</p>
+    <footer class="py-4 border-t border-zinc-950 bg-black text-center text-[9px] text-zinc-600 uppercase tracking-widest">
+        <p>© 2026 H-AI CORE SYSTEM</p>
     </footer>
 
-    <!-- JavaScript Logic -->
+    <!-- JS Logic -->
     <script>
         // State
-        let classes = {
-            "Uyandırma Sözcüğü (Hey H-AI)": [], // İlk ve zorunlu sınıf
-            "Arkaplan Gürültüsü": []            // Çevresel sesler için zorunlu sınıf
-        };
+        let wakeWord = "Hey Susam"; // Default fallback
+        let classes = {};
+        
         let activeClass = null;
         let mediaRecorder = null;
         let audioChunks = [];
@@ -170,9 +214,14 @@
         let animationFrameId = null;
 
         // Elements
+        const p1 = document.getElementById('page-1');
+        const p2 = document.getElementById('page-2');
+        const p3 = document.getElementById('page-3');
+        const headerBadge = document.getElementById('header-badge');
+        const wakeInput = document.getElementById('wake-word-input');
+        const startBtn = document.getElementById('start-btn');
+        
         const classesContainer = document.getElementById('classes-container');
-        const classInput = document.getElementById('class-input');
-        const addClassBtn = document.getElementById('add-class-btn');
         const recordingPanel = document.getElementById('recording-panel');
         const activeClassTitle = document.getElementById('active-class-title');
         const closeRecorderBtn = document.getElementById('close-recorder-btn');
@@ -184,100 +233,84 @@
         const trainSpinner = document.getElementById('train-spinner');
         const trainIcon = document.getElementById('train-icon');
 
-        // Initial Setup
-        renderClasses();
-
-        // Custom Message Box
-        function showMessage(text, type = "info") {
-            const box = document.getElementById('message-box');
-            const iconBox = document.getElementById('message-icon-box');
-            const msgText = document.getElementById('message-text');
-
-            msgText.innerText = text;
-            if (type === "success") {
-                iconBox.className = "w-8 h-8 rounded bg-white flex items-center justify-center text-black";
-                iconBox.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-            } else if (type === "error") {
-                iconBox.className = "w-8 h-8 rounded bg-red-600 flex items-center justify-center text-white";
-                iconBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
-            } else {
-                iconBox.className = "w-8 h-8 rounded bg-zinc-800 flex items-center justify-center text-zinc-300";
-                iconBox.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
-            }
-
-            box.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                box.classList.add('translate-y-20', 'opacity-0');
-            }, 3500);
-        }
-
-        // Add new Command Class
-        addClassBtn.addEventListener('click', () => {
-            const className = classInput.value.trim();
-            if (!className) {
-                showMessage("Lütfen geçerli bir komut girin.", "error");
+        // Page 1 Navigation
+        startBtn.addEventListener('click', () => {
+            const rawInput = wakeInput.value.trim();
+            if (!rawInput) {
+                showToast("Lütfen asistanınız için bir uyandırma sözcüğü belirleyin.", "error");
                 return;
             }
-            if (classes[className]) {
-                showMessage("Bu komut zaten listenizde mevcut.", "error");
-                return;
-            }
-            classes[className] = [];
-            classInput.value = "";
+            wakeWord = rawInput;
+            
+            // Model sınıflarını hazırla
+            classes = {
+                [wakeWord]: [],
+                "Arkaplan Gürültüsü": []
+            };
+
+            // Sayfaları değiştir
+            p1.classList.add('hidden');
+            p2.classList.remove('hidden');
+            headerBadge.innerText = "SES LABORATUVARI";
+            
             renderClasses();
-            showMessage(`"${className}" komutu listenize eklendi.`);
+            showToast(`Uyandırma kelimesi "${wakeWord}" olarak ayarlandı.`);
         });
 
-        // Render classes
+        // Toast Notifications
+        function showToast(text, type = "info") {
+            const toast = document.getElementById('toast-message');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-text');
+
+            msg.innerText = text;
+            if (type === "success") {
+                icon.className = "w-7 h-7 rounded bg-white text-black flex items-center justify-center";
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else if (type === "error") {
+                icon.className = "w-7 h-7 rounded bg-red-600 text-white flex items-center justify-center";
+                icon.innerHTML = '<i class="fa-solid fa-exclamation"></i>';
+            } else {
+                icon.className = "w-7 h-7 rounded bg-zinc-800 text-zinc-300 flex items-center justify-center";
+                icon.innerHTML = '<i class="fa-solid fa-info"></i>';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Render Sınıf Kartları
         function renderClasses() {
             classesContainer.innerHTML = '';
             
             Object.keys(classes).forEach(className => {
                 const count = classes[className].length;
+                const isWake = className === wakeWord;
+                
                 const card = document.createElement('div');
-                
-                // İlk uyandırma sözcüğü ve arkaplan gürültüsü özel sınıflardır, silinemez.
-                const isSpecial = className === "Uyandırma Sözcüğü (Hey H-AI)" || className === "Arkaplan Gürültüsü";
-                
-                card.className = `p-4 rounded-lg border transition-all ${activeClass === className ? 'bg-zinc-950 border-white' : 'bg-zinc-950 border-zinc-900 hover:border-zinc-800'} flex justify-between items-center`;
+                card.className = `p-3.5 rounded-lg border transition-all cursor-pointer ${activeClass === className ? 'bg-zinc-950 border-white' : 'bg-zinc-950 border-zinc-900 hover:border-zinc-800'} flex justify-between items-center`;
                 card.innerHTML = `
-                    <div class="flex-1 cursor-pointer" onclick="openRecorder('${className}')">
+                    <div class="flex-1" onclick="openRecorder('${className}')">
                         <div class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full ${count >= 8 ? 'bg-white' : 'bg-zinc-700'}"></span>
-                            <span class="font-medium text-sm text-zinc-100">${className}</span>
+                            <span class="w-1.5 h-1.5 rounded-full ${count >= 3 ? 'bg-white' : 'bg-zinc-800'}"></span>
+                            <span class="font-semibold text-xs tracking-wide uppercase text-zinc-200">${className}</span>
+                            ${isWake ? '<span class="text-[9px] bg-white text-black font-extrabold px-1.5 rounded uppercase tracking-wider">UYANDIRMA</span>' : '<span class="text-[9px] bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold px-1.5 rounded uppercase tracking-wider">GÜRÜLTÜ</span>'}
                         </div>
-                        <p class="text-[11px] text-zinc-500 mt-1">${count} adet ses örneği</p>
+                        <p class="text-[10px] text-zinc-500 mt-1">${count} adet örnek ses kaydı alındı</p>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="openRecorder('${className}')" class="text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded border border-zinc-800 transition-colors">
-                            <i class="fa-solid fa-microphone"></i> Kaydet
-                        </button>
-                        ${!isSpecial ? `
-                            <button onclick="deleteClass('${className}')" class="text-xs bg-black hover:bg-zinc-900 text-zinc-500 hover:text-white p-2 rounded border border-zinc-900 hover:border-zinc-800 transition-all">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        ` : ''}
-                    </div>
+                    <button onclick="openRecorder('${className}')" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 px-3 py-2 rounded font-semibold border border-zinc-800 transition-colors">
+                        Kayıt Ekle
+                    </button>
                 `;
                 classesContainer.appendChild(card);
             });
 
-            checkTrainStatus();
+            updateRequirements();
         }
 
-        // Delete Class
-        window.deleteClass = function(className) {
-            if (className === "Uyandırma Sözcüğü (Hey H-AI)" || className === "Arkaplan Gürültüsü") return;
-            delete classes[className];
-            if (activeClass === className) {
-                recordingPanel.classList.add('hidden');
-                activeClass = null;
-            }
-            renderClasses();
-            showMessage(`"${className}" komutu silindi.`, "info");
-        }
-
-        // Open recording interface for class
+        // Recorder'ı aç
         window.openRecorder = function(className) {
             activeClass = className;
             activeClassTitle.innerText = className;
@@ -293,7 +326,7 @@
             renderClasses();
         });
 
-        // Initialize Audio Context and Microphone
+        // Mikrofon yetkilendirme ve Analyser
         async function setupMicrophone() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -323,24 +356,24 @@
                             classes[activeClass].push({
                                 id: Date.now(),
                                 audio: base64Audio,
-                                date: new Date().toLocaleTimeString()
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                             });
                             renderSamples();
                             renderClasses();
-                            showMessage("Ses örneği sisteme eklendi.", "success");
+                            showToast("Ses örneği sisteme eklendi.", "success");
                         }
                     };
                 };
 
                 return true;
             } catch (err) {
-                console.error("Mikrofon hatası:", err);
-                showMessage("Mikrofon erişimi alınamadı.", "error");
+                console.error("Mic error:", err);
+                showToast("Mikrofon bağlantısı kurulamadı. Lütfen izin verin.", "error");
                 return false;
             }
         }
 
-        // Real-time animation
+        // Dalga formunu görselleştirme
         function updateWave() {
             if (!analyser) return;
             analyser.getByteFrequencyData(dataArray);
@@ -348,13 +381,13 @@
             
             for (let i = 0; i < bars.length; i++) {
                 const value = dataArray[i % dataArray.length];
-                const height = Math.max(4, Math.min(40, (value / 255) * 40));
+                const height = Math.max(4, Math.min(32, (value / 255) * 32));
                 bars[i].style.height = `${height}px`;
             }
             animationFrameId = requestAnimationFrame(updateWave);
         }
 
-        // Recording Action
+        // Kayıt işlemleri
         let isRecording = false;
 
         recordBtn.addEventListener('click', async () => {
@@ -371,49 +404,49 @@
                 audioChunks = [];
                 mediaRecorder.start();
                 isRecording = true;
-                recordBtn.classList.remove('bg-white', 'hover:bg-zinc-200');
-                recordBtn.classList.add('bg-red-600', 'hover:bg-red-500', 'animate-pulse', 'text-white');
-                recorderStatus.innerText = "H-AI dinliyor... Durdurmak için dokunun.";
+                recordBtn.classList.remove('bg-white');
+                recordBtn.classList.add('bg-red-600', 'animate-pulse', 'text-white');
+                recorderStatus.innerText = "Kayıt yapılıyor... Durdurmak için dokunun.";
                 waveContainer.style.opacity = "1";
                 updateWave();
             } else {
                 mediaRecorder.stop();
                 isRecording = false;
-                recordBtn.classList.remove('bg-red-600', 'hover:bg-red-500', 'animate-pulse', 'text-white');
-                recordBtn.classList.add('bg-white', 'hover:bg-zinc-200');
-                recorderStatus.innerText = "Kayıt başarıyla durduruldu.";
+                recordBtn.classList.remove('bg-red-600', 'animate-pulse', 'text-white');
+                recordBtn.classList.add('bg-white');
+                recorderStatus.innerText = "Ses başarıyla yakalandı.";
                 waveContainer.style.opacity = "0.3";
                 cancelAnimationFrame(animationFrameId);
             }
         });
 
-        // Render audio samples
+        // Örnek ses listelerini listele
         function renderSamples() {
             samplesList.innerHTML = '';
             if (!activeClass || !classes[activeClass]) return;
 
             if (classes[activeClass].length === 0) {
-                samplesList.innerHTML = '<p class="text-xs text-zinc-650 py-2">Henüz ses örneği eklenmemiş.</p>';
+                samplesList.innerHTML = '<p class="text-[11px] text-zinc-650 py-1.5">Henüz bu sınıfta kayıt yok.</p>';
                 return;
             }
 
             classes[activeClass].forEach((sample, index) => {
-                const badge = document.createElement('div');
-                badge.className = "bg-black border border-zinc-900 pl-3 pr-2 py-1.5 rounded flex items-center gap-3 text-xs text-zinc-350";
-                badge.innerHTML = `
-                    <span>Örnek #${index + 1} (${sample.date})</span>
-                    <button onclick="playSample('${activeClass}', ${sample.id})" class="text-white hover:text-zinc-400 transition-colors">
+                const chip = document.createElement('div');
+                chip.className = "bg-zinc-950 border border-zinc-900 pl-2.5 pr-1.5 py-1 rounded flex items-center gap-2 text-[10px] text-zinc-400";
+                chip.innerHTML = `
+                    <span>#${index + 1} (${sample.time})</span>
+                    <button onclick="playAudio('${activeClass}', ${sample.id})" class="text-white hover:text-zinc-300">
                         <i class="fa-solid fa-play"></i>
                     </button>
-                    <button onclick="deleteSample('${activeClass}', ${sample.id})" class="text-zinc-600 hover:text-white transition-colors ml-1">
-                        <i class="fa-solid fa-trash"></i>
+                    <button onclick="deleteAudio('${activeClass}', ${sample.id})" class="text-zinc-600 hover:text-white ml-0.5">
+                        <i class="fa-solid fa-times"></i>
                     </button>
                 `;
-                samplesList.appendChild(badge);
+                samplesList.appendChild(chip);
             });
         }
 
-        window.playSample = function(className, id) {
+        window.playAudio = function(className, id) {
             const sample = classes[className].find(s => s.id === id);
             if (sample) {
                 const audio = new Audio(sample.audio);
@@ -421,57 +454,79 @@
             }
         }
 
-        window.deleteSample = function(className, id) {
+        window.deleteAudio = function(className, id) {
             classes[className] = classes[className].filter(s => s.id !== id);
             renderSamples();
             renderClasses();
-            showMessage("Örnek silindi.", "info");
+            showToast("Kayıt silindi.");
         }
 
-        // Validation for Training
-        function checkTrainStatus() {
-            const keys = Object.keys(classes);
-            // Minimum model şartı: En az 1 uyandırma kelimesi ve en az 1 özel komut, her birinde en az 3'er adet kayıt.
-            const hasEnoughClasses = keys.length >= 3; 
-            const hasEnoughSamples = keys.every(key => classes[key].length >= 3);
+        // Koşul Listesi Güncelleme
+        function updateRequirements() {
+            const wakeCount = classes[wakeWord] ? classes[wakeWord].length : 0;
+            const noiseCount = classes["Arkaplan Gürültüsü"] ? classes["Arkaplan Gürültüsü"].length : 0;
 
-            if (hasEnoughClasses && hasEnoughSamples) {
+            const checkWake = document.getElementById('check-wake-word');
+            const checkWakeIcon = document.getElementById('check-wake-icon');
+            const checkWakeText = document.getElementById('check-wake-text');
+
+            const checkNoise = document.getElementById('check-bg-noise');
+            const checkNoiseIcon = document.getElementById('check-noise-icon');
+            const checkNoiseText = document.getElementById('check-noise-text');
+
+            checkWakeText.innerText = `"${wakeWord}" Uyandırma Kelimesi Kaydı (${wakeCount}/3)`;
+            if (wakeCount >= 3) {
+                checkWake.className = "flex items-center gap-2 text-white font-medium";
+                checkWakeIcon.className = "fa-solid fa-circle-check text-white";
+            } else {
+                checkWake.className = "flex items-center gap-2 text-zinc-600";
+                checkWakeIcon.className = "fa-regular fa-circle text-zinc-600";
+            }
+
+            checkNoiseText.innerText = `Arkaplan Gürültüsü Kaydı (${noiseCount}/3)`;
+            if (noiseCount >= 3) {
+                checkNoise.className = "flex items-center gap-2 text-white font-medium";
+                checkNoiseIcon.className = "fa-solid fa-circle-check text-white";
+            } else {
+                checkNoise.className = "flex items-center gap-2 text-zinc-600";
+                checkNoiseIcon.className = "fa-regular fa-circle text-zinc-600";
+            }
+
+            if (wakeCount >= 3 && noiseCount >= 3) {
                 trainBtn.disabled = false;
-                trainBtn.className = "w-full sm:w-auto bg-white hover:bg-zinc-200 active:scale-95 text-black font-semibold text-sm px-8 py-3.5 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer";
+                trainBtn.className = "w-full bg-white hover:bg-zinc-200 text-black font-bold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/5 cursor-pointer";
             } else {
                 trainBtn.disabled = true;
-                trainBtn.className = "w-full sm:w-auto bg-zinc-900 text-zinc-600 cursor-not-allowed font-semibold text-sm px-8 py-3.5 rounded-lg transition-all flex items-center justify-center gap-2 border border-zinc-800";
+                trainBtn.className = "w-full bg-zinc-900 text-zinc-650 cursor-not-allowed font-semibold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2 border border-zinc-850";
             }
         }
 
-        // Training simulation
+        // Model Eğitim Butonu ve Simülasyon
         trainBtn.addEventListener('click', () => {
             if (trainBtn.disabled) return;
 
             trainBtn.disabled = true;
             trainSpinner.classList.remove('hidden');
             trainIcon.classList.add('hidden');
-            trainBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            trainBtn.classList.add('opacity-40', 'cursor-not-allowed');
 
-            showMessage("Veri paketleri hazırlanıyor. H-AI sunucusuna gönderiliyor...", "info");
+            showToast("H-AI ses şemaları derleniyor...", "info");
 
             setTimeout(() => {
-                showMessage("Uyandırma parametreleri ve arkaplan gürültüsü ayıklanıyor...", "info");
+                showToast("Arkaplan parazitleri temizleniyor...", "info");
             }, 2000);
 
             setTimeout(() => {
-                showMessage("H-AI nöral ağı ses spektrumunuzu modelliyor...", "info");
-            }, 4500);
+                showToast("Yapay zeka modeli paketleniyor...", "info");
+            }, 4000);
 
             setTimeout(() => {
-                trainSpinner.classList.add('hidden');
-                trainIcon.classList.remove('hidden');
-                trainBtn.disabled = false;
-                trainBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                
-                showMessage("Tebrikler! Kişisel H-AI ses modeliniz başarıyla eğitildi.", "success");
-                
-                // Save models state download
+                // Sayfa 3'e geç
+                p2.classList.add('hidden');
+                p3.classList.remove('hidden');
+                headerBadge.innerText = "BAŞARILI";
+
+                // Dosya indirme simülasyonu (Arka planda sessizce gerçekleşir)
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(classes));
                 const downloadAnchor = document.createElement('a');
                 downloadAnchor.setAttribute("href", dataStr);
@@ -479,8 +534,7 @@
                 document.body.appendChild(downloadAnchor);
                 downloadAnchor.click();
                 downloadAnchor.remove();
-
-            }, 7500);
+            }, 6000);
         });
 
     </script>
