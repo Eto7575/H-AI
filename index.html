@@ -158,25 +158,26 @@
             </div>
         </section>
 
-        <!-- SAYFA 3: BAŞARI EKRANI (MİNİMALİST & SADECE BİR GÖRSEL) -->
+        <!-- SAYFA 3: BAŞARI EKRANI & CANLI DİNLEME AKTİVASYONU -->
         <section id="page-3" class="hidden flex flex-col items-center justify-center gap-8 py-16 text-center animate-fade-in">
             <!-- Modern Soyut Yapay Zeka Ses Dalgası / Orb Görseli -->
             <div class="relative w-48 h-48 flex items-center justify-center">
                 <div class="absolute inset-0 rounded-full border border-white/5 animate-ping opacity-20 duration-1000"></div>
                 <div class="absolute inset-4 rounded-full border border-white/10 animate-pulse duration-700"></div>
                 <div class="absolute inset-8 rounded-full border border-zinc-850 bg-black flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.05)]">
-                    <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center animate-pulse">
-                        <i class="fa-solid fa-microphone-lines text-white text-2xl"></i>
+                    <div id="mic-pulse-core" class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+                        <i class="fa-solid fa-microphone-lines text-white text-2xl" id="mic-status-icon"></i>
                     </div>
                 </div>
             </div>
 
             <!-- Sadece Başarı Yazısı -->
             <div class="space-y-3 px-4">
-                <h2 class="text-lg font-black tracking-widest uppercase text-zinc-500">İŞLEM BAŞARILI</h2>
-                <p class="text-xl font-medium text-white max-w-sm mx-auto leading-relaxed">
+                <h2 id="success-state-title" class="text-lg font-black tracking-widest uppercase text-zinc-500">İŞLEM BAŞARILI</h2>
+                <p id="success-state-desc" class="text-xl font-medium text-white max-w-sm mx-auto leading-relaxed">
                     Tebrikler. Artık asistanınız sizinle daha iyi konuşabilecek.
                 </p>
+                <p id="live-listen-subtext" class="text-xs text-zinc-500 animate-pulse hidden">Telefonunuz arka planda uyanmak için sesinizi dinliyor...</p>
             </div>
         </section>
 
@@ -185,7 +186,7 @@
     <!-- Mesaj Paneli (Custom Toast) -->
     <div id="toast-message" class="fixed bottom-4 right-4 max-w-xs w-full bg-zinc-950 border border-zinc-800 rounded p-3.5 shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex gap-2.5 items-center">
         <div id="toast-icon" class="w-7 h-7 rounded flex items-center justify-center bg-white text-black text-xs"></div>
-        <p id="toast-text" class="text-[11px] text-zinc-350 font-medium"></p>
+        <p id="toast-text" class="text-[11px] text-zinc-355 font-medium"></p>
     </div>
 
     <!-- Footer -->
@@ -243,7 +244,8 @@
 
             // Sayfaları değiştir
             p1.classList.add('hidden');
-            p2.classList.remove('hidden');
+            p2.remove(); // Gereksiz DOM tutulmasın
+            document.getElementById('page-2').classList.remove('hidden');
             headerBadge.innerText = "SES LABORATUVARI";
             
             renderClasses();
@@ -478,7 +480,16 @@
             }
         }
 
-        // Model Eğitim Simülasyonu
+        // WebString İletişim Köprüsü (App Inventor Integration)
+        function sendToAppInventor(command) {
+            if (window.AppInventor) {
+                window.AppInventor.setWebViewString(command);
+            } else {
+                console.log("App Inventor Bridge algılanamadı, komut:", command);
+            }
+        }
+
+        // Model Eğitim Simülasyonu ve Canlı Dinleme Aktivasyonu
         trainBtn.addEventListener('click', () => {
             if (trainBtn.disabled) return;
 
@@ -495,20 +506,64 @@
 
             setTimeout(() => {
                 // Sayfa 3'e geçiş
-                p2.classList.add('hidden');
+                document.getElementById('page-2').classList.add('hidden');
                 p3.classList.remove('hidden');
-                headerBadge.innerText = "BAŞARILI";
+                headerBadge.innerText = "DİNLENİYOR";
 
-                // Dosya indirme (Arka planda çalışır)
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(classes));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", "hai_kisisel_ses_modeli.json");
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-            }, 4500);
+                // App Inventor'a işlemin başarılı olduğunu ve dinlemeye başladığını haber et
+                sendToAppInventor("islem_basarili");
+
+                // Canlı algılama modunu başlat
+                startLiveListeningMode();
+            }, 4000);
         });
+
+        // Canlı Dinleme Simülasyonu / Basit Ses Eşik Tetikleyicisi
+        function startLiveListeningMode() {
+            const micPulseCore = document.getElementById('mic-pulse-core');
+            const micStatusIcon = document.getElementById('mic-status-icon');
+            const successTitle = document.getElementById('success-state-title');
+            const successDesc = document.getElementById('success-state-desc');
+            const liveListenSubtext = document.getElementById('live-listen-subtext');
+
+            // Görseli dinleme durumuna göre güncelle
+            successTitle.innerText = "H-AI AKTİF";
+            successTitle.className = "text-lg font-black tracking-widest uppercase text-emerald-500 animate-pulse";
+            successDesc.innerText = `Asistanınız uyanmaya hazır. Cihaza "${wakeWord}" diyerek seslenebilirsiniz.`;
+            liveListenSubtext.classList.remove('hidden');
+            micPulseCore.className = "w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center animate-pulse";
+            micStatusIcon.className = "fa-solid fa-ear-listen text-emerald-400 text-2xl animate-bounce";
+
+            // Eğer mikrofon bağlıysa gerçek ses seviyesini takip et
+            if (audioContext && analyser) {
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                const listenLoop = () => {
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        sum += dataArray[i];
+                    }
+                    let average = sum / bufferLength;
+
+                    // Eğer yüksek bir ses piki yakalarsa (Kullanıcının konuştuğunu varsayarak test komutu gönderelim)
+                    if (average > 85) { 
+                        // Ses eşiği aşıldı, App Inventor'a uyanma sinyalini gönder!
+                        sendToAppInventor("hey_susam");
+                        showToast("Ses uyarısı telefona gönderildi!", "success");
+                        
+                        // Kısa süreli görsel tepki ver
+                        micPulseCore.className = "w-16 h-16 rounded-full bg-white text-black flex items-center justify-center scale-110 duration-150";
+                        setTimeout(() => {
+                            micPulseCore.className = "w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center animate-pulse";
+                        }, 500);
+                    }
+                    requestAnimationFrame(listenLoop);
+                };
+                listenLoop();
+            }
+        }
 
     </script>
 </body>
