@@ -48,11 +48,11 @@
         </div>
     </header>
 
-    <!-- Main Content Containers -->
+    <!-- Ana İçerik Alanı -->
     <main class="max-w-xl w-full mx-auto p-4 flex-1 flex flex-col justify-center">
         
         <!-- SAYFA 1: UYANDIRMA SÖZCÜĞÜ BELİRLEME -->
-        <section id="page-1" class="flex flex-col gap-6 py-8">
+        <section id="page-1" class="flex flex-col gap-6 py-8 animate-fade-in">
             <div class="text-center space-y-2">
                 <div class="inline-flex w-12 h-12 rounded-full border border-zinc-800 items-center justify-center mb-2">
                     <i class="fa-solid fa-microphone-lines text-zinc-400 text-lg"></i>
@@ -78,19 +78,19 @@
         </section>
 
         <!-- SAYFA 2: MODELİ EĞİT (SES TOPlAMA & PANEL) -->
-        <section id="page-2" class="hidden flex flex-col gap-6 py-4">
+        <section id="page-2" class="hidden flex flex-col gap-6 py-4 animate-fade-in">
             
             <!-- Bilgilendirme -->
             <div class="bg-zinc-950 border border-zinc-900 rounded-lg p-4 flex gap-3 items-start">
                 <i class="fa-solid fa-circle-nodes text-zinc-500 mt-0.5"></i>
                 <div class="text-xs text-zinc-400 leading-relaxed">
-                    <span class="text-white font-semibold">Nasıl Çalışır?</span> Belirlediğiniz ses grupları için en az 3'er adet ses kaydı gönderin. Alttaki kontrol listesindeki tüm adımlar tamamlandığında modelinizi eğitebilirsiniz.
+                    <span class="text-white font-semibold">Nasıl Çalışır?</span> Belirlediğiniz uyandırma sözcüğü için en az 3 adet ses kaydı gönderin. Alttaki kontrol listesi tamamlandığında modelinizi eğitebilirsiniz.
                 </div>
             </div>
 
-            <!-- Ses Sınıfları Listesi -->
+            <!-- Ses Sınıfı Listesi -->
             <div class="space-y-3">
-                <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Eğitilecek Ses Sınıfları</h3>
+                <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Eğitilecek Ses Sınıfı</h3>
                 <div id="classes-container" class="space-y-2.5">
                     <!-- Dinamik olarak doldurulacak -->
                 </div>
@@ -139,15 +139,11 @@
 
             <!-- Gereksinim Kontrol Listesi -->
             <div class="bg-zinc-950 border border-zinc-900 rounded-lg p-4 space-y-2">
-                <h4 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Eğitim Koşulları</h4>
+                <h4 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Eğitim Koşulu</h4>
                 <div class="space-y-1.5 text-xs">
                     <div id="check-wake-word" class="flex items-center gap-2 text-zinc-500">
                         <i class="fa-regular fa-circle" id="check-wake-icon"></i>
                         <span id="check-wake-text">Uyandırma Kelimesi Kaydı (0/3)</span>
-                    </div>
-                    <div id="check-bg-noise" class="flex items-center gap-2 text-zinc-500">
-                        <i class="fa-regular fa-circle" id="check-noise-icon"></i>
-                        <span id="check-noise-text">Arkaplan Gürültüsü Kaydı (0/3)</span>
                     </div>
                 </div>
             </div>
@@ -166,11 +162,9 @@
         <section id="page-3" class="hidden flex flex-col items-center justify-center gap-8 py-16 text-center animate-fade-in">
             <!-- Modern Soyut Yapay Zeka Ses Dalgası / Orb Görseli -->
             <div class="relative w-48 h-48 flex items-center justify-center">
-                <!-- Glowing Outer Rings -->
                 <div class="absolute inset-0 rounded-full border border-white/5 animate-ping opacity-20 duration-1000"></div>
                 <div class="absolute inset-4 rounded-full border border-white/10 animate-pulse duration-700"></div>
                 <div class="absolute inset-8 rounded-full border border-zinc-850 bg-black flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.05)]">
-                    <!-- Center Pulse Ring -->
                     <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center animate-pulse">
                         <i class="fa-solid fa-microphone-lines text-white text-2xl"></i>
                     </div>
@@ -242,10 +236,9 @@
             }
             wakeWord = rawInput;
             
-            // Model sınıflarını hazırla
+            // Sadece uyandırma kelimesini içerecek şekilde sınıfları ayarla
             classes = {
-                [wakeWord]: [],
-                "Arkaplan Gürültüsü": []
+                [wakeWord]: []
             };
 
             // Sayfaları değiştir
@@ -281,22 +274,20 @@
             }, 3000);
         }
 
-        // Render Sınıf Kartları
+        // Render Sınıf Kartı
         function renderClasses() {
             classesContainer.innerHTML = '';
             
             Object.keys(classes).forEach(className => {
                 const count = classes[className].length;
-                const isWake = className === wakeWord;
-                
                 const card = document.createElement('div');
-                card.className = `p-3.5 rounded-lg border transition-all cursor-pointer ${activeClass === className ? 'bg-zinc-950 border-white' : 'bg-zinc-950 border-zinc-900 hover:border-zinc-800'} flex justify-between items-center`;
+                card.className = `p-4 rounded-lg border transition-all cursor-pointer ${activeClass === className ? 'bg-zinc-950 border-white' : 'bg-zinc-950 border-zinc-900 hover:border-zinc-800'} flex justify-between items-center`;
                 card.innerHTML = `
                     <div class="flex-1" onclick="openRecorder('${className}')">
                         <div class="flex items-center gap-2">
                             <span class="w-1.5 h-1.5 rounded-full ${count >= 3 ? 'bg-white' : 'bg-zinc-800'}"></span>
                             <span class="font-semibold text-xs tracking-wide uppercase text-zinc-200">${className}</span>
-                            ${isWake ? '<span class="text-[9px] bg-white text-black font-extrabold px-1.5 rounded uppercase tracking-wider">UYANDIRMA</span>' : '<span class="text-[9px] bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold px-1.5 rounded uppercase tracking-wider">GÜRÜLTÜ</span>'}
+                            <span class="text-[9px] bg-white text-black font-extrabold px-1.5 rounded uppercase tracking-wider">UYANDIRMA</span>
                         </div>
                         <p class="text-[10px] text-zinc-500 mt-1">${count} adet örnek ses kaydı alındı</p>
                     </div>
@@ -461,47 +452,33 @@
             showToast("Kayıt silindi.");
         }
 
-        // Koşul Listesi Güncelleme
+        // Koşul Listesi Güncelleme ve Buton Aktivasyonu
         function updateRequirements() {
             const wakeCount = classes[wakeWord] ? classes[wakeWord].length : 0;
-            const noiseCount = classes["Arkaplan Gürültüsü"] ? classes["Arkaplan Gürültüsü"].length : 0;
 
             const checkWake = document.getElementById('check-wake-word');
             const checkWakeIcon = document.getElementById('check-wake-icon');
             const checkWakeText = document.getElementById('check-wake-text');
 
-            const checkNoise = document.getElementById('check-bg-noise');
-            const checkNoiseIcon = document.getElementById('check-noise-icon');
-            const checkNoiseText = document.getElementById('check-noise-text');
-
             checkWakeText.innerText = `"${wakeWord}" Uyandırma Kelimesi Kaydı (${wakeCount}/3)`;
             if (wakeCount >= 3) {
                 checkWake.className = "flex items-center gap-2 text-white font-medium";
                 checkWakeIcon.className = "fa-solid fa-circle-check text-white";
-            } else {
-                checkWake.className = "flex items-center gap-2 text-zinc-600";
-                checkWakeIcon.className = "fa-regular fa-circle text-zinc-600";
-            }
-
-            checkNoiseText.innerText = `Arkaplan Gürültüsü Kaydı (${noiseCount}/3)`;
-            if (noiseCount >= 3) {
-                checkNoise.className = "flex items-center gap-2 text-white font-medium";
-                checkNoiseIcon.className = "fa-solid fa-circle-check text-white";
-            } else {
-                checkNoise.className = "flex items-center gap-2 text-zinc-600";
-                checkNoiseIcon.className = "fa-regular fa-circle text-zinc-600";
-            }
-
-            if (wakeCount >= 3 && noiseCount >= 3) {
+                
+                // Butonu aktifleştir
                 trainBtn.disabled = false;
                 trainBtn.className = "w-full bg-white hover:bg-zinc-200 text-black font-bold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/5 cursor-pointer";
             } else {
+                checkWake.className = "flex items-center gap-2 text-zinc-600";
+                checkWakeIcon.className = "fa-regular fa-circle text-zinc-600";
+                
+                // Butonu deaktifleştir
                 trainBtn.disabled = true;
                 trainBtn.className = "w-full bg-zinc-900 text-zinc-650 cursor-not-allowed font-semibold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2 border border-zinc-850";
             }
         }
 
-        // Model Eğitim Butonu ve Simülasyon
+        // Model Eğitim Simülasyonu
         trainBtn.addEventListener('click', () => {
             if (trainBtn.disabled) return;
 
@@ -513,20 +490,16 @@
             showToast("H-AI ses şemaları derleniyor...", "info");
 
             setTimeout(() => {
-                showToast("Arkaplan parazitleri temizleniyor...", "info");
-            }, 2000);
-
-            setTimeout(() => {
                 showToast("Yapay zeka modeli paketleniyor...", "info");
-            }, 4000);
+            }, 2500);
 
             setTimeout(() => {
-                // Sayfa 3'e geç
+                // Sayfa 3'e geçiş
                 p2.classList.add('hidden');
                 p3.classList.remove('hidden');
                 headerBadge.innerText = "BAŞARILI";
 
-                // Dosya indirme simülasyonu (Arka planda sessizce gerçekleşir)
+                // Dosya indirme (Arka planda çalışır)
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(classes));
                 const downloadAnchor = document.createElement('a');
                 downloadAnchor.setAttribute("href", dataStr);
@@ -534,7 +507,7 @@
                 document.body.appendChild(downloadAnchor);
                 downloadAnchor.click();
                 downloadAnchor.remove();
-            }, 6000);
+            }, 4500);
         });
 
     </script>
