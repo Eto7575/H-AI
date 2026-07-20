@@ -77,12 +77,12 @@
             </div>
         </section>
 
-        <!-- SAYFA 2: MODELİ EĞİT (SES TOPlAMA & PANEL) -->
+        <!-- SAYFA 2: MODELİ EĞİT (SES TOPLAMA & PANEL) -->
         <section id="page-2" class="hidden flex flex-col gap-6 py-4 animate-fade-in">
             
             <!-- Bilgilendirme -->
             <div class="bg-zinc-950 border border-zinc-900 rounded-lg p-4 flex gap-3 items-start">
-                <i class="fa-solid fa-circle-nodes text-zinc-500 mt-0.5"></i>
+                <i class="fa-solid fa-circle-nodes text-zinc-550 mt-0.5"></i>
                 <div class="text-xs text-zinc-400 leading-relaxed">
                     <span class="text-white font-semibold">Nasıl Çalışır?</span> Belirlediğiniz uyandırma sözcüğü için en az 3 adet ses kaydı gönderin. Alttaki kontrol listesi tamamlandığında modelinizi eğitebilirsiniz.
                 </div>
@@ -90,7 +90,7 @@
 
             <!-- Ses Sınıfı Listesi -->
             <div class="space-y-3">
-                <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Eğitilecek Ses Sınıfı</h3>
+                <h3 class="text-[10px] font-bold text-zinc-550 uppercase tracking-widest">Eğitilecek Ses Sınıfı</h3>
                 <div id="classes-container" class="space-y-2.5">
                     <!-- Dinamik olarak doldurulacak -->
                 </div>
@@ -139,9 +139,9 @@
 
             <!-- Gereksinim Kontrol Listesi -->
             <div class="bg-zinc-950 border border-zinc-900 rounded-lg p-4 space-y-2">
-                <h4 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Eğitim Koşulu</h4>
+                <h4 class="text-[10px] font-bold text-zinc-550 uppercase tracking-widest">Eğitim Koşulu</h4>
                 <div class="space-y-1.5 text-xs">
-                    <div id="check-wake-word" class="flex items-center gap-2 text-zinc-500">
+                    <div id="check-wake-word" class="flex items-center gap-2 text-zinc-550">
                         <i class="fa-regular fa-circle" id="check-wake-icon"></i>
                         <span id="check-wake-text">Uyandırma Kelimesi Kaydı (0/3)</span>
                     </div>
@@ -185,11 +185,11 @@
     <!-- Mesaj Paneli (Custom Toast) -->
     <div id="toast-message" class="fixed bottom-4 right-4 max-w-xs w-full bg-zinc-950 border border-zinc-800 rounded p-3.5 shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex gap-2.5 items-center">
         <div id="toast-icon" class="w-7 h-7 rounded flex items-center justify-center bg-white text-black text-xs"></div>
-        <p id="toast-text" class="text-[11px] text-zinc-300 font-medium"></p>
+        <p id="toast-text" class="text-[11px] text-zinc-350 font-medium"></p>
     </div>
 
     <!-- Footer -->
-    <footer class="py-4 border-t border-zinc-950 bg-black text-center text-[9px] text-zinc-600 uppercase tracking-widest">
+    <footer class="py-4 border-t border-zinc-950 bg-black text-center text-[9px] text-zinc-650 uppercase tracking-widest">
         <p>© 2026 H-AI CORE SYSTEM</p>
     </footer>
 
@@ -264,7 +264,7 @@
                 icon.className = "w-7 h-7 rounded bg-red-600 text-white flex items-center justify-center";
                 icon.innerHTML = '<i class="fa-solid fa-exclamation"></i>';
             } else {
-                icon.className = "w-7 h-7 rounded bg-zinc-800 text-zinc-300 flex items-center justify-center";
+                icon.className = "w-7 h-7 rounded bg-zinc-800 text-zinc-350 flex items-center justify-center";
                 icon.innerHTML = '<i class="fa-solid fa-info"></i>';
             }
 
@@ -429,7 +429,7 @@
                     <button onclick="playAudio('${activeClass}', ${sample.id})" class="text-white hover:text-zinc-300">
                         <i class="fa-solid fa-play"></i>
                     </button>
-                    <button onclick="deleteAudio('${activeClass}', ${sample.id})" class="text-zinc-600 hover:text-white ml-0.5">
+                    <button onclick="deleteAudio('${activeClass}', ${sample.id})" class="text-zinc-650 hover:text-white ml-0.5">
                         <i class="fa-solid fa-times"></i>
                     </button>
                 `;
@@ -491,7 +491,7 @@
 
             setTimeout(() => {
                 showToast("Yapay zeka modeli paketleniyor...", "info");
-            }, 2500);
+            }, 2000);
 
             setTimeout(() => {
                 // Sayfa 3'e geçiş
