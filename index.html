@@ -4,567 +4,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H-AI - Kişisel Ses Asistanı Eğitim Portalı</title>
-    <!-- Tailwind CSS CDN -->
+    <title>H-AI Core - Arka Plan Dinleme Portalı</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background-color: #000000;
+            background-color: #050505;
+            background-image: radial-gradient(circle at 50% 50%, #111111 0%, #050505 100%);
         }
-        ::-webkit-scrollbar {
-            width: 4px;
+        .glow-active {
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.8);
         }
-        ::-webkit-scrollbar-track {
-            background: #000000;
+        .glow-listening {
+            box-shadow: 0 0 50px rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.8);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #222222;
-            border-radius: 2px;
+        .glow-success {
+            box-shadow: 0 0 60px rgba(34, 197, 94, 0.5);
+            border-color: rgba(34, 197, 94, 0.9);
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #444444;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000000; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
     </style>
 </head>
-<body class="text-white min-h-screen flex flex-col justify-between font-sans selection:bg-white selection:text-black">
+<body class="text-white min-h-screen flex flex-col justify-between font-sans selection:bg-white selection:text-black overflow-x-hidden">
 
-    <!-- Header -->
-    <header class="border-b border-zinc-900 bg-black/85 backdrop-blur sticky top-0 z-50 px-4 py-4">
+    <!-- Üst Bar -->
+    <header class="border-b border-zinc-900/80 bg-black/40 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
         <div class="max-w-xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-md bg-white flex items-center justify-center shadow-lg shadow-white/5">
-                    <span class="text-black font-black text-sm tracking-tighter">H.</span>
+                <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-lg shadow-white/5">
+                    <span class="text-black font-black text-base tracking-tighter">H.</span>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg tracking-wider leading-none">H-AI</h1>
-                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest mt-1">SES LABORATUVARI</p>
+                    <h1 class="font-bold text-base tracking-wider leading-none">H-AI CORE</h1>
+                    <p class="text-[8px] text-zinc-500 uppercase tracking-widest mt-1">Arka Plan Dinleme Portalı</p>
                 </div>
             </div>
-            <div id="header-badge" class="text-[10px] bg-zinc-900 text-zinc-300 px-2.5 py-1 rounded font-mono border border-zinc-800 uppercase tracking-wider">
-                GİRİŞ SAYFASI
+            <div id="service-badge" class="text-[9px] bg-zinc-900 text-zinc-400 px-2.5 py-1 rounded font-mono border border-zinc-800/60 uppercase tracking-widest flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" id="status-dot"></span>
+                <span id="status-text">ÇEVRİMDIŞI</span>
             </div>
         </div>
     </header>
 
-    <!-- Ana İçerik Alanı -->
-    <main class="max-w-xl w-full mx-auto p-4 flex-1 flex flex-col justify-center">
+    <!-- Ana Panel -->
+    <main class="max-w-xl w-full mx-auto p-4 flex-1 flex flex-col justify-center gap-6">
         
-        <!-- SAYFA 1: UYANDIRMA SÖZCÜĞÜ BELİRLEME -->
-        <section id="page-1" class="flex flex-col gap-6 py-8 animate-fade-in">
-            <div class="text-center space-y-2">
-                <div class="inline-flex w-12 h-12 rounded-full border border-zinc-800 items-center justify-center mb-2">
-                    <i class="fa-solid fa-microphone-lines text-zinc-400 text-lg"></i>
-                </div>
-                <h2 class="text-xl font-bold tracking-tight">H-AI'a nasıl seslenmek istersiniz?</h2>
-                <p class="text-xs text-zinc-500 max-w-sm mx-auto">Asistanınızı uykusundan uyandıracak size özel sihirli kelimeyi veya cümleyi belirleyin.</p>
-            </div>
-
-            <div class="space-y-4">
-                <div class="relative">
-                    <input id="wake-word-input" type="text" placeholder="Örn: Hey Susam" 
-                           class="w-full bg-zinc-950 border border-zinc-850 rounded-lg px-4 py-4 text-center text-lg font-semibold focus:outline-none focus:border-white placeholder:text-zinc-700 transition-colors uppercase tracking-wider text-white">
-                </div>
+        <!-- Ses Çekirdeği (Görsel Animasyon) -->
+        <div class="flex flex-col items-center justify-center py-6">
+            <div id="voice-core" class="w-40 h-40 rounded-full border-2 border-zinc-800 bg-black/40 flex items-center justify-center transition-all duration-500 relative cursor-pointer">
+                <!-- Arka Plan Dalgaları -->
+                <div class="absolute inset-0 rounded-full border border-white/5 animate-ping opacity-20 hidden" id="ripple-1"></div>
+                <div class="absolute inset-2 rounded-full border border-blue-500/10 animate-pulse hidden" id="ripple-2"></div>
                 
-                <button id="start-btn" class="w-full bg-white hover:bg-zinc-200 active:scale-[0.98] text-black font-bold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2">
-                    Devam Et <i class="fa-solid fa-arrow-right text-xs"></i>
-                </button>
+                <div class="text-center z-10">
+                    <i class="fa-solid fa-microphone text-3xl text-zinc-650 transition-colors duration-300" id="mic-icon"></i>
+                    <p class="text-[9px] text-zinc-500 uppercase tracking-widest mt-2 font-mono" id="core-state-text">DOKUN VE BAŞLAT</p>
+                </div>
             </div>
+        </div>
 
-            <div class="border-t border-zinc-950 pt-4 text-center">
-                <p class="text-[10px] text-zinc-650 uppercase tracking-wider">Tavsiye edilenler: "Hey Susam", "Hey H-AI", "Yapay Zeka"</p>
-            </div>
-        </section>
-
-        <!-- SAYFA 2: MODELİ EĞİT (SES TOPLAMA & PANEL) -->
-        <section id="page-2" class="hidden flex flex-col gap-6 py-4 animate-fade-in">
+        <!-- Hızlı Ayarlar Kartı -->
+        <div class="bg-zinc-950/80 border border-zinc-900 rounded-xl p-5 space-y-4">
+            <h2 class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-zinc-500"></i> Servis Parametreleri
+            </h2>
             
-            <!-- Bilgilendirme -->
-            <div class="bg-zinc-950 border border-zinc-900 rounded-lg p-4 flex gap-3 items-start">
-                <i class="fa-solid fa-circle-nodes text-zinc-550 mt-0.5"></i>
-                <div class="text-xs text-zinc-400 leading-relaxed">
-                    <span class="text-white font-semibold">Nasıl Çalışır?</span> Belirlediğiniz uyandırma sözcüğü için en az 3 adet ses kaydı gönderin. Alttaki kontrol listesi tamamlandığında modelinizi eğitebilirsiniz.
-                </div>
-            </div>
-
-            <!-- Ses Sınıfı Listesi -->
             <div class="space-y-3">
-                <h3 class="text-[10px] font-bold text-zinc-550 uppercase tracking-widest">Eğitilecek Ses Sınıfı</h3>
-                <div id="classes-container" class="space-y-2.5">
-                    <!-- Dinamik olarak doldurulacak -->
-                </div>
-            </div>
-
-            <!-- Ses Kayıt Paneli -->
-            <div id="recording-panel" class="hidden bg-zinc-950 border border-zinc-900 rounded-lg p-4 transition-all duration-300">
-                <div class="flex justify-between items-center mb-3">
-                    <h4 class="text-xs font-semibold text-white flex items-center gap-1.5">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                        </span>
-                        "<span id="active-class-title" class="text-zinc-300">Sınıf</span>" Kayıt Odası
-                    </h4>
-                    <button id="close-recorder-btn" class="text-zinc-500 hover:text-white text-[10px] flex items-center gap-1 bg-black px-2.5 py-1 rounded border border-zinc-850 transition-colors">
-                        Kapat
-                    </button>
+                <!-- Uyandırma Sözcüğü Tanımı -->
+                <div>
+                    <label class="text-[10px] text-zinc-500 uppercase tracking-wider block mb-1.5">Uyandırma Anahtarı (Wake Word)</label>
+                    <input id="wake-word-input" type="text" value="hey susam" placeholder="Örn: hey susam" 
+                           class="w-full bg-black border border-zinc-850 rounded-lg px-4 py-3 text-sm font-semibold focus:outline-none focus:border-white transition-all uppercase tracking-wider text-center text-white">
                 </div>
 
-                <div class="bg-black rounded border border-zinc-900 p-4 flex flex-col items-center justify-center gap-3 text-center">
-                    <!-- Dalga efekti -->
-                    <div id="wave-container" class="flex items-center gap-1 h-8 justify-center opacity-30 transition-all">
-                        <span class="w-[2px] bg-white rounded-full h-2 transition-all duration-150"></span>
-                        <span class="w-[2px] bg-white rounded-full h-5 transition-all duration-150"></span>
-                        <span class="w-[2px] bg-white rounded-full h-7 transition-all duration-150"></span>
-                        <span class="w-[2px] bg-white rounded-full h-3 transition-all duration-150"></span>
-                        <span class="w-[2px] bg-white rounded-full h-6 transition-all duration-150"></span>
-                        <span class="w-[2px] bg-white rounded-full h-2 transition-all duration-150"></span>
+                <!-- Güç Modu Kilidi -->
+                <div class="flex justify-between items-center p-3 bg-black/60 rounded-lg border border-zinc-900/60">
+                    <div>
+                        <h3 class="text-xs font-bold text-zinc-300">Sessiz Güç Kilidi (Audio WakeLock)</h3>
+                        <p class="text-[10px] text-zinc-500 mt-0.5">Android'in uygulamayı arka planda uyutmasını engeller.</p>
                     </div>
-
-                    <p id="recorder-status" class="text-[11px] text-zinc-500">Mikrofona dokunarak 1.5 saniye boyunca kelimeyi söyleyin.</p>
-
-                    <button id="record-btn" class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 active:scale-90 transition-all flex items-center justify-center text-black text-lg shadow-lg">
-                        <i class="fa-solid fa-microphone"></i>
-                    </button>
-                </div>
-
-                <!-- Kayıtlar listesi -->
-                <div class="mt-3">
-                    <div id="samples-list" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
-                        <!-- Kayıtlar buraya sıralanacak -->
-                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="wakelock-toggle" checked class="sr-only peer">
+                        <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-400 after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-white peer-checked:after:bg-black peer-checked:after:border-black"></div>
+                    </label>
                 </div>
             </div>
 
-            <!-- Gereksinim Kontrol Listesi -->
-            <div class="bg-zinc-950 border border-zinc-900 rounded-lg p-4 space-y-2">
-                <h4 class="text-[10px] font-bold text-zinc-550 uppercase tracking-widest">Eğitim Koşulu</h4>
-                <div class="space-y-1.5 text-xs">
-                    <div id="check-wake-word" class="flex items-center gap-2 text-zinc-550">
-                        <i class="fa-regular fa-circle" id="check-wake-icon"></i>
-                        <span id="check-wake-text">Uyandırma Kelimesi Kaydı (0/3)</span>
-                    </div>
-                </div>
-            </div>
+            <!-- Servis Kontrol Butonu -->
+            <button id="ctrl-btn" class="w-full bg-white hover:bg-zinc-200 text-black font-bold text-sm py-3.5 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/5">
+                <i class="fa-solid fa-power-off"></i> Servisi Aktifleştir
+            </button>
+        </div>
 
-            <!-- Eğit Butonu -->
-            <div class="pt-2">
-                <button id="train-btn" disabled class="w-full bg-zinc-900 text-zinc-650 cursor-not-allowed font-semibold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2 border border-zinc-850">
-                    <i class="fa-solid fa-circle-notch animate-spin hidden" id="train-spinner"></i>
-                    <i class="fa-solid fa-bolt" id="train-icon"></i>
-                    Modeli Eğit ve Paketle
-                </button>
+        <!-- Terminal Log Ekranı (Debug Console) -->
+        <div class="bg-black border border-zinc-900 rounded-xl p-4 font-mono text-[10px] text-zinc-400 space-y-2 shadow-inner">
+            <div class="flex justify-between items-center border-b border-zinc-900 pb-2 mb-2">
+                <span class="text-zinc-500 uppercase tracking-wider text-[9px] font-bold">Sistem Günlükleri (Console Log)</span>
+                <button onclick="clearLogs()" class="text-zinc-600 hover:text-white transition-colors">TEMİZLE</button>
             </div>
-        </section>
-
-        <!-- SAYFA 3: BAŞARI EKRANI & CANLI DİNLEME AKTİVASYONU -->
-        <section id="page-3" class="hidden flex flex-col items-center justify-center gap-8 py-16 text-center animate-fade-in">
-            <!-- Modern Soyut Yapay Zeka Ses Dalgası / Orb Görseli -->
-            <div class="relative w-48 h-48 flex items-center justify-center">
-                <div class="absolute inset-0 rounded-full border border-white/5 animate-ping opacity-20 duration-1000"></div>
-                <div class="absolute inset-4 rounded-full border border-white/10 animate-pulse duration-700"></div>
-                <div class="absolute inset-8 rounded-full border border-zinc-850 bg-black flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.05)]">
-                    <div id="mic-pulse-core" class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
-                        <i class="fa-solid fa-microphone-lines text-white text-2xl" id="mic-status-icon"></i>
-                    </div>
-                </div>
+            <div id="terminal-box" class="h-28 overflow-y-auto space-y-1 pr-1 flex flex-col-reverse">
+                <!-- Günlükler buraya akacak -->
             </div>
-
-            <!-- Sadece Başarı Yazısı -->
-            <div class="space-y-3 px-4">
-                <h2 id="success-state-title" class="text-lg font-black tracking-widest uppercase text-zinc-500">İŞLEM BAŞARILI</h2>
-                <p id="success-state-desc" class="text-xl font-medium text-white max-w-sm mx-auto leading-relaxed">
-                    Tebrikler. Artık asistanınız sizinle daha iyi konuşabilecek.
-                </p>
-                <p id="live-listen-subtext" class="text-xs text-zinc-500 animate-pulse hidden">Telefonunuz arka planda uyanmak için sesinizi dinliyor...</p>
-            </div>
-        </section>
+        </div>
 
     </main>
 
-    <!-- Mesaj Paneli (Custom Toast) -->
-    <div id="toast-message" class="fixed bottom-4 right-4 max-w-xs w-full bg-zinc-950 border border-zinc-800 rounded p-3.5 shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex gap-2.5 items-center">
-        <div id="toast-icon" class="w-7 h-7 rounded flex items-center justify-center bg-white text-black text-xs"></div>
-        <p id="toast-text" class="text-[11px] text-zinc-355 font-medium"></p>
-    </div>
-
-    <!-- Footer -->
-    <footer class="py-4 border-t border-zinc-950 bg-black text-center text-[9px] text-zinc-650 uppercase tracking-widest">
-        <p>© 2026 H-AI CORE SYSTEM</p>
+    <!-- Alt Bilgi -->
+    <footer class="py-4 border-t border-zinc-950 bg-black/60 text-center text-[9px] text-zinc-600 uppercase tracking-widest">
+        <p>© 2026 H-AI CORE BACKGROUND SERVICES</p>
     </footer>
 
-    <!-- JS Logic -->
     <script>
-        // State
-        let wakeWord = "Hey Susam"; // Default fallback
-        let classes = {};
-        
-        let activeClass = null;
-        let mediaRecorder = null;
-        let audioChunks = [];
-        let audioContext = null;
-        let analyser = null;
-        let dataArray = null;
-        let animationFrameId = null;
+        let recognition = null;
+        let isServiceRunning = false;
+        let wakeWord = "hey susam";
+        let audioCtx = null;
+        let silentBufferSource = null;
 
-        // Elements
-        const p1 = document.getElementById('page-1');
-        const p2 = document.getElementById('page-2');
-        const p3 = document.getElementById('page-3');
-        const headerBadge = document.getElementById('header-badge');
+        const voiceCore = document.getElementById('voice-core');
+        const micIcon = document.getElementById('mic-icon');
+        const coreStateText = document.getElementById('core-state-text');
+        const serviceBadge = document.getElementById('service-badge');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
         const wakeInput = document.getElementById('wake-word-input');
-        const startBtn = document.getElementById('start-btn');
-        
-        const classesContainer = document.getElementById('classes-container');
-        const recordingPanel = document.getElementById('recording-panel');
-        const activeClassTitle = document.getElementById('active-class-title');
-        const closeRecorderBtn = document.getElementById('close-recorder-btn');
-        const recordBtn = document.getElementById('record-btn');
-        const recorderStatus = document.getElementById('recorder-status');
-        const waveContainer = document.getElementById('wave-container');
-        const samplesList = document.getElementById('samples-list');
-        const trainBtn = document.getElementById('train-btn');
-        const trainSpinner = document.getElementById('train-spinner');
-        const trainIcon = document.getElementById('train-icon');
+        const ctrlBtn = document.getElementById('ctrl-btn');
+        const terminalBox = document.getElementById('terminal-box');
+        const wakelockToggle = document.getElementById('wakelock-toggle');
+        const ripple1 = document.getElementById('ripple-1');
+        const ripple2 = document.getElementById('ripple-2');
 
-        // Page 1 Navigation
-        startBtn.addEventListener('click', () => {
-            const rawInput = wakeInput.value.trim();
-            if (!rawInput) {
-                showToast("Lütfen asistanınız için bir uyandırma sözcüğü belirleyin.", "error");
-                return;
-            }
-            wakeWord = rawInput;
-            
-            // Sadece uyandırma kelimesini içerecek şekilde sınıfları ayarla
-            classes = {
-                [wakeWord]: []
-            };
+        // Terminale Log Yazma Fonksiyonu
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            let color = 'text-zinc-500';
+            if (type === 'success') color = 'text-green-400 font-bold';
+            if (type === 'warn') color = 'text-yellow-500';
+            if (type === 'error') color = 'text-red-500 font-bold';
+            if (type === 'active') color = 'text-blue-400';
 
-            // Sayfaları değiştir
-            p1.classList.add('hidden');
-            p2.remove(); // Gereksiz DOM tutulmasın
-            document.getElementById('page-2').classList.remove('hidden');
-            headerBadge.innerText = "SES LABORATUVARI";
-            
-            renderClasses();
-            showToast(`Uyandırma kelimesi "${wakeWord}" olarak ayarlandı.`);
-        });
-
-        // Toast Notifications
-        function showToast(text, type = "info") {
-            const toast = document.getElementById('toast-message');
-            const icon = document.getElementById('toast-icon');
-            const msg = document.getElementById('toast-text');
-
-            msg.innerText = text;
-            if (type === "success") {
-                icon.className = "w-7 h-7 rounded bg-white text-black flex items-center justify-center";
-                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
-            } else if (type === "error") {
-                icon.className = "w-7 h-7 rounded bg-red-600 text-white flex items-center justify-center";
-                icon.innerHTML = '<i class="fa-solid fa-exclamation"></i>';
-            } else {
-                icon.className = "w-7 h-7 rounded bg-zinc-800 text-zinc-350 flex items-center justify-center";
-                icon.innerHTML = '<i class="fa-solid fa-info"></i>';
-            }
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            const logElement = document.createElement('div');
+            logElement.className = `${color} leading-relaxed break-all`;
+            logElement.innerHTML = `[${time}] ${message}`;
+            terminalBox.insertBefore(logElement, terminalBox.firstChild);
         }
 
-        // Render Sınıf Kartı
-        function renderClasses() {
-            classesContainer.innerHTML = '';
-            
-            Object.keys(classes).forEach(className => {
-                const count = classes[className].length;
-                const card = document.createElement('div');
-                card.className = `p-4 rounded-lg border transition-all cursor-pointer ${activeClass === className ? 'bg-zinc-950 border-white' : 'bg-zinc-950 border-zinc-900 hover:border-zinc-800'} flex justify-between items-center`;
-                card.innerHTML = `
-                    <div class="flex-1" onclick="openRecorder('${className}')">
-                        <div class="flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full ${count >= 3 ? 'bg-white' : 'bg-zinc-800'}"></span>
-                            <span class="font-semibold text-xs tracking-wide uppercase text-zinc-200">${className}</span>
-                            <span class="text-[9px] bg-white text-black font-extrabold px-1.5 rounded uppercase tracking-wider">UYANDIRMA</span>
-                        </div>
-                        <p class="text-[10px] text-zinc-500 mt-1">${count} adet örnek ses kaydı alındı</p>
-                    </div>
-                    <button onclick="openRecorder('${className}')" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-200 px-3 py-2 rounded font-semibold border border-zinc-800 transition-colors">
-                        Kayıt Ekle
-                    </button>
-                `;
-                classesContainer.appendChild(card);
-            });
+        window.clearLogs = function() {
+            terminalBox.innerHTML = '';
+            log("Konsol temizlendi.");
+        };
 
-            updateRequirements();
-        }
-
-        // Recorder'ı aç
-        window.openRecorder = function(className) {
-            activeClass = className;
-            activeClassTitle.innerText = className;
-            recordingPanel.classList.remove('hidden');
-            renderClasses();
-            renderSamples();
-            recordingPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        closeRecorderBtn.addEventListener('click', () => {
-            recordingPanel.classList.add('hidden');
-            activeClass = null;
-            renderClasses();
-        });
-
-        // Mikrofon yetkilendirme ve Analyser
-        async function setupMicrophone() {
+        // Sessiz Güç Kilidi (Android Arka Plan Tutucu)
+        function startSilentAudio() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
                 
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioContext.createMediaStreamSource(stream);
-                analyser = audioContext.createAnalyser();
-                analyser.fftSize = 32;
-                source.connect(analyser);
-                dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-                mediaRecorder = new MediaRecorder(stream);
+                // İnsan kulağının duyamayacağı (örneğin 20000 Hz üstü veya sıfır genlik) bir sessiz sinyal üretir
+                const bufferSize = audioCtx.sampleRate;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 
-                mediaRecorder.ondataavailable = e => {
-                    audioChunks.push(e.data);
-                };
+                // Buffer'ın içini sıfırlarla dolduruyoruz (Tamamen Sessiz)
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = 0;
+                }
 
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    audioChunks = [];
-                    
-                    const reader = new FileReader();
-                    reader.readAsDataURL(audioBlob);
-                    reader.onloadend = () => {
-                        const base64Audio = reader.result;
-                        if (activeClass) {
-                            classes[activeClass].push({
-                                id: Date.now(),
-                                audio: base64Audio,
-                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                            });
-                            renderSamples();
-                            renderClasses();
-                            showToast("Ses örneği sisteme eklendi.", "success");
-                        }
-                    };
-                };
-
-                return true;
+                silentBufferSource = audioCtx.createBufferSource();
+                silentBufferSource.buffer = buffer;
+                silentBufferSource.loop = true;
+                silentBufferSource.connect(audioCtx.destination);
+                silentBufferSource.start();
+                
+                log("Sessiz Güç Kilidi (Audio WakeLock) aktifleşti.", "active");
             } catch (err) {
-                console.error("Mic error:", err);
-                showToast("Mikrofon bağlantısı kurulamadı. Lütfen izin verin.", "error");
+                log("Güç Kilidi başlatılamadı: " + err.message, "warn");
+            }
+        }
+
+        function stopSilentAudio() {
+            if (silentBufferSource) {
+                try {
+                    silentBufferSource.stop();
+                    log("Sessiz Güç Kilidi devredışı bırakıldı.");
+                } catch (e) {}
+                silentBufferSource = null;
+            }
+        }
+
+        // Web Speech API - Sürekli Dinleme Motoru
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                log("Cihazınız Web Speech API desteklemiyor!", "error");
                 return false;
             }
-        }
 
-        // Dalga formunu görselleştirme
-        function updateWave() {
-            if (!analyser) return;
-            analyser.getByteFrequencyData(dataArray);
-            const bars = waveContainer.children;
-            
-            for (let i = 0; i < bars.length; i++) {
-                const value = dataArray[i % dataArray.length];
-                const height = Math.max(4, Math.min(32, (value / 255) * 32));
-                bars[i].style.height = `${height}px`;
-            }
-            animationFrameId = requestAnimationFrame(updateWave);
-        }
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'tr-TR';
 
-        // Kayıt işlemleri
-        let isRecording = false;
+            recognition.onstart = () => {
+                log("Mikrofon dinlemeye başladı. Kelime bekleniyor...", "info");
+                setUIState('listening');
+            };
 
-        recordBtn.addEventListener('click', async () => {
-            if (!isRecording) {
-                if (!mediaRecorder) {
-                    const ready = await setupMicrophone();
-                    if (!ready) return;
+            recognition.onerror = (event) => {
+                // Arka planda çalışırken oluşan sessizlik hatalarını yoksay ve logla
+                if (event.error !== 'no-speech') {
+                    log("Algılama hatası: " + event.error, "warn");
                 }
-                
-                if (audioContext && audioContext.state === 'suspended') {
-                    await audioContext.resume();
+            };
+
+            recognition.onend = () => {
+                // Servis hala aktifse, kapandığı an otomatik olarak GERİ AÇ (Arka plan sürekliliği)
+                if (isServiceRunning) {
+                    setTimeout(() => {
+                        try {
+                            recognition.start();
+                            log("Ses motoru otomatik olarak yeniden başlatıldı.");
+                        } catch (e) {}
+                    }, 200);
+                } else {
+                    log("Ses motoru durduruldu.");
+                    setUIState('idle');
+                }
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
                 }
 
-                audioChunks = [];
-                mediaRecorder.start();
-                isRecording = true;
-                recordBtn.classList.remove('bg-white');
-                recordBtn.classList.add('bg-red-600', 'animate-pulse', 'text-white');
-                recorderStatus.innerText = "Kayıt yapılıyor... Durdurmak için dokunun.";
-                waveContainer.style.opacity = "1";
-                updateWave();
-            } else {
-                mediaRecorder.stop();
-                isRecording = false;
-                recordBtn.classList.remove('bg-red-600', 'animate-pulse', 'text-white');
-                recordBtn.classList.add('bg-white');
-                recorderStatus.innerText = "Ses başarıyla yakalandı.";
-                waveContainer.style.opacity = "0.3";
-                cancelAnimationFrame(animationFrameId);
-            }
-        });
-
-        // Örnek ses listelerini listele
-        function renderSamples() {
-            samplesList.innerHTML = '';
-            if (!activeClass || !classes[activeClass]) return;
-
-            if (classes[activeClass].length === 0) {
-                samplesList.innerHTML = '<p class="text-[11px] text-zinc-650 py-1.5">Henüz bu sınıfta kayıt yok.</p>';
-                return;
-            }
-
-            classes[activeClass].forEach((sample, index) => {
-                const chip = document.createElement('div');
-                chip.className = "bg-zinc-950 border border-zinc-900 pl-2.5 pr-1.5 py-1 rounded flex items-center gap-2 text-[10px] text-zinc-400";
-                chip.innerHTML = `
-                    <span>#${index + 1} (${sample.time})</span>
-                    <button onclick="playAudio('${activeClass}', ${sample.id})" class="text-white hover:text-zinc-300">
-                        <i class="fa-solid fa-play"></i>
-                    </button>
-                    <button onclick="deleteAudio('${activeClass}', ${sample.id})" class="text-zinc-650 hover:text-white ml-0.5">
-                        <i class="fa-solid fa-times"></i>
-                    </button>
-                `;
-                samplesList.appendChild(chip);
-            });
-        }
-
-        window.playAudio = function(className, id) {
-            const sample = classes[className].find(s => s.id === id);
-            if (sample) {
-                const audio = new Audio(sample.audio);
-                audio.play();
-            }
-        }
-
-        window.deleteAudio = function(className, id) {
-            classes[className] = classes[className].filter(s => s.id !== id);
-            renderSamples();
-            renderClasses();
-            showToast("Kayıt silindi.");
-        }
-
-        // Koşul Listesi Güncelleme ve Buton Aktivasyonu
-        function updateRequirements() {
-            const wakeCount = classes[wakeWord] ? classes[wakeWord].length : 0;
-
-            const checkWake = document.getElementById('check-wake-word');
-            const checkWakeIcon = document.getElementById('check-wake-icon');
-            const checkWakeText = document.getElementById('check-wake-text');
-
-            checkWakeText.innerText = `"${wakeWord}" Uyandırma Kelimesi Kaydı (${wakeCount}/3)`;
-            if (wakeCount >= 3) {
-                checkWake.className = "flex items-center gap-2 text-white font-medium";
-                checkWakeIcon.className = "fa-solid fa-circle-check text-white";
-                
-                // Butonu aktifleştir
-                trainBtn.disabled = false;
-                trainBtn.className = "w-full bg-white hover:bg-zinc-200 text-black font-bold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/5 cursor-pointer";
-            } else {
-                checkWake.className = "flex items-center gap-2 text-zinc-600";
-                checkWakeIcon.className = "fa-regular fa-circle text-zinc-600";
-                
-                // Butonu deaktifleştir
-                trainBtn.disabled = true;
-                trainBtn.className = "w-full bg-zinc-900 text-zinc-650 cursor-not-allowed font-semibold text-sm py-4 rounded-lg transition-all flex items-center justify-center gap-2 border border-zinc-850";
-            }
-        }
-
-        // WebString İletişim Köprüsü (App Inventor Integration)
-        function sendToAppInventor(command) {
-            if (window.AppInventor) {
-                window.AppInventor.setWebViewString(command);
-            } else {
-                console.log("App Inventor Bridge algılanamadı, komut:", command);
-            }
-        }
-
-        // Model Eğitim Simülasyonu ve Canlı Dinleme Aktivasyonu
-        trainBtn.addEventListener('click', () => {
-            if (trainBtn.disabled) return;
-
-            trainBtn.disabled = true;
-            trainSpinner.classList.remove('hidden');
-            trainIcon.classList.add('hidden');
-            trainBtn.classList.add('opacity-40', 'cursor-not-allowed');
-
-            showToast("H-AI ses şemaları derleniyor...", "info");
-
-            setTimeout(() => {
-                showToast("Yapay zeka modeli paketleniyor...", "info");
-            }, 2000);
-
-            setTimeout(() => {
-                // Sayfa 3'e geçiş
-                document.getElementById('page-2').classList.add('hidden');
-                p3.classList.remove('hidden');
-                headerBadge.innerText = "DİNLENİYOR";
-
-                // App Inventor'a işlemin başarılı olduğunu ve dinlemeye başladığını haber et
-                sendToAppInventor("islem_basarili");
-
-                // Canlı algılama modunu başlat
-                startLiveListeningMode();
-            }, 4000);
-        });
-
-        // Canlı Dinleme Simülasyonu / Basit Ses Eşik Tetikleyicisi
-        function startLiveListeningMode() {
-            const micPulseCore = document.getElementById('mic-pulse-core');
-            const micStatusIcon = document.getElementById('mic-status-icon');
-            const successTitle = document.getElementById('success-state-title');
-            const successDesc = document.getElementById('success-state-desc');
-            const liveListenSubtext = document.getElementById('live-listen-subtext');
-
-            // Görseli dinleme durumuna göre güncelle
-            successTitle.innerText = "H-AI AKTİF";
-            successTitle.className = "text-lg font-black tracking-widest uppercase text-emerald-500 animate-pulse";
-            successDesc.innerText = `Asistanınız uyanmaya hazır. Cihaza "${wakeWord}" diyerek seslenebilirsiniz.`;
-            liveListenSubtext.classList.remove('hidden');
-            micPulseCore.className = "w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center animate-pulse";
-            micStatusIcon.className = "fa-solid fa-ear-listen text-emerald-400 text-2xl animate-bounce";
-
-            // Eğer mikrofon bağlıysa gerçek ses seviyesini takip et
-            if (audioContext && analyser) {
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                
-                const listenLoop = () => {
-                    analyser.getByteFrequencyData(dataArray);
-                    let sum = 0;
-                    for (let i = 0; i < bufferLength; i++) {
-                        sum += dataArray[i];
+                const currentText = (finalTranscript || interimTranscript).toLowerCase().trim();
+                if (currentText) {
+                    log(`Duyulan: "${currentText}"`);
+                    
+                    // Anahtar kelime yakalama kontrolü (Fuzzy matching ile esnek arama)
+                    if (currentText.includes(wakeWord.toLowerCase().trim())) {
+                        triggerWakeUp(currentText);
                     }
-                    let average = sum / bufferLength;
+                }
+            };
 
-                    // Eğer yüksek bir ses piki yakalarsa (Kullanıcının konuştuğunu varsayarak test komutu gönderelim)
-                    if (average > 85) { 
-                        // Ses eşiği aşıldı, App Inventor'a uyanma sinyalini gönder!
-                        sendToAppInventor("hey_susam");
-                        showToast("Ses uyarısı telefona gönderildi!", "success");
-                        
-                        // Kısa süreli görsel tepki ver
-                        micPulseCore.className = "w-16 h-16 rounded-full bg-white text-black flex items-center justify-center scale-110 duration-150";
-                        setTimeout(() => {
-                            micPulseCore.className = "w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center animate-pulse";
-                        }, 500);
-                    }
-                    requestAnimationFrame(listenLoop);
-                };
-                listenLoop();
+            return true;
+        }
+
+        // Kelime Algılandığında Tetikleyici Çalıştır
+        function triggerWakeUp(heardPhrase) {
+            log(`SİHİRLİ KELİME YAKALANDI! -> "${heardPhrase}"`, "success");
+            setUIState('success');
+
+            // App Inventor CustomWebView Entegrasyonu (Uygulamayı Ön Plana Getirmek veya Ses Çalmak için)
+            if (window.AppInventor && window.AppInventor.setWebViewString) {
+                window.AppInventor.setWebViewString("hey_susam");
+            } else {
+                log("App Inventor köprüsü bulunamadı (Tarayıcıda test ediliyor).", "warn");
+            }
+
+            // 1.5 saniye sonra tekrar standart dinleme durumuna geri dön
+            setTimeout(() => {
+                if (isServiceRunning) {
+                    setUIState('listening');
+                }
+            }, 1500);
+        }
+
+        // Arayüz Durum Yönetimi
+        function setUIState(state) {
+            if (state === 'idle') {
+                voiceCore.className = "w-40 h-40 rounded-full border-2 border-zinc-800 bg-black/40 flex items-center justify-center transition-all duration-500 relative cursor-pointer";
+                micIcon.className = "fa-solid fa-microphone text-3xl text-zinc-700";
+                coreStateText.innerText = "DOKUN VE BAŞLAT";
+                coreStateText.className = "text-[9px] text-zinc-500 uppercase tracking-widest mt-2 font-mono";
+                serviceBadge.className = "text-[9px] bg-zinc-900 text-zinc-400 px-2.5 py-1 rounded font-mono border border-zinc-800/60 uppercase tracking-widest flex items-center gap-1.5";
+                statusDot.className = "w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse";
+                statusText.innerText = "ÇEVRİMDIŞI";
+                ctrlBtn.className = "w-full bg-white hover:bg-zinc-200 text-black font-bold text-sm py-3.5 rounded-lg transition-all flex items-center justify-center gap-2";
+                ctrlBtn.innerHTML = `<i class="fa-solid fa-power-off"></i> Servisi Aktifleştir`;
+                ripple1.classList.add('hidden');
+                ripple2.classList.add('hidden');
+            } 
+            else if (state === 'listening') {
+                voiceCore.className = "w-40 h-40 rounded-full border-2 bg-black/40 flex items-center justify-center transition-all duration-500 relative cursor-pointer glow-listening";
+                micIcon.className = "fa-solid fa-microphone text-3xl text-blue-400";
+                coreStateText.innerText = "SESSİZCE DİNLİYOR";
+                coreStateText.className = "text-[9px] text-blue-400 uppercase tracking-widest mt-2 font-mono";
+                serviceBadge.className = "text-[9px] bg-blue-950 text-blue-400 px-2.5 py-1 rounded font-mono border border-blue-900/60 uppercase tracking-widest flex items-center gap-1.5";
+                statusDot.className = "w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping";
+                statusText.innerText = "DİNLİYOR";
+                ctrlBtn.className = "w-full bg-red-950 hover:bg-red-900 text-red-200 border border-red-900 font-bold text-sm py-3.5 rounded-lg transition-all flex items-center justify-center gap-2";
+                ctrlBtn.innerHTML = `<i class="fa-solid fa-circle-stop"></i> Servisi Durdur`;
+                ripple1.classList.remove('hidden');
+                ripple2.classList.remove('hidden');
+            } 
+            else if (state === 'success') {
+                voiceCore.className = "w-40 h-40 rounded-full border-2 bg-black/40 flex items-center justify-center transition-all duration-500 relative cursor-pointer glow-success";
+                micIcon.className = "fa-solid fa-check text-3xl text-green-400";
+                coreStateText.innerText = "SÖZCÜK ALGILANDI";
+                coreStateText.className = "text-[9px] text-green-400 uppercase tracking-widest mt-2 font-mono";
             }
         }
 
+        // Servis Kilidini Açma / Kapatma (Ana Tetikleyici)
+        function toggleService() {
+            if (!isServiceRunning) {
+                // Başlatılıyor
+                wakeWord = wakeInput.value.trim() || "hey susam";
+                log(`H-AI Servisi başlatılıyor. Hedef sözcük: "${wakeWord}"`, "active");
+
+                if (wakelockToggle.checked) {
+                    startSilentAudio();
+                }
+
+                if (!recognition) {
+                    initSpeechRecognition();
+                }
+
+                try {
+                    recognition.start();
+                    isServiceRunning = true;
+                    log("Servis başarıyla kilitlendi ve arka plana hazır hale getirildi.", "success");
+                } catch (e) {
+                    log("Hata: " + e.message, "error");
+                }
+            } else {
+                // Durduruluyor
+                log("Servis kapatılıyor...", "warn");
+                isServiceRunning = false;
+                stopSilentAudio();
+                if (recognition) {
+                    recognition.stop();
+                }
+                setUIState('idle');
+            }
+        }
+
+        ctrlBtn.addEventListener('click', toggleService);
+        voiceCore.addEventListener('click', toggleService);
+
+        // Sayfa ilk yüklendiğinde
+        window.addEventListener('DOMContentLoaded', () => {
+            log("H-AI Arka Plan Portalı Hazır. Başlatmak için butona basın.");
+        });
     </script>
 </body>
 </html>
